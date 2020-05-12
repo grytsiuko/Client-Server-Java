@@ -16,34 +16,14 @@ public class PacketEncoder {
 
     private Key key;
     private Cipher cipher;
-
-    private Byte source;
-    private Long packetID;
-    private int commandType;
-    private int userID;
-    private byte[] message;
+    private Packet packet;
 
 
     public PacketEncoder() {
     }
 
-    public PacketEncoder setSource(byte source) {
-        this.source = source;
-        return this;
-    }
-
-    public PacketEncoder setPacketID(long packetID) {
-        this.packetID = packetID;
-        return this;
-    }
-
-    public PacketEncoder setUserID(int userID) {
-        this.userID = userID;
-        return this;
-    }
-
-    public PacketEncoder setCommandType(int commandType) {
-        this.commandType = commandType;
+    public PacketEncoder setPacket(Packet packet) {
+        this.packet = packet;
         return this;
     }
 
@@ -58,34 +38,55 @@ public class PacketEncoder {
         return this;
     }
 
-    public PacketEncoder setMessage(String message) throws Exception {
-        cipher.init(Cipher.ENCRYPT_MODE, this.key);
-        this.message = this.cipher.doFinal(message.getBytes(StandardCharsets.UTF_8));
-
-        return this;
+    public byte[] encode() throws Exception {
+        if(this.key == null){
+            throw new IllegalStateException("Key is not defined");
+        }
+        if(this.cipher == null){
+            throw new IllegalStateException("Cipher and Algorithm are not defined");
+        }
+        if(this.packet == null){
+            throw new IllegalStateException("Packet is not defined");
+        }
+        return encodeLegalState();
     }
 
-    public byte[] encode() {
-        int messageBlockLength = this.message.length + 8;
-        ByteBuffer byteBuffer = ByteBuffer.allocate(18 + messageBlockLength);
+    public byte[] encodeLegalState() throws Exception {
+        byte[] messageEncryptedBytes = getEncryptedMessage();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(26 + messageEncryptedBytes.length);
 
+        putMetadata(byteBuffer, messageEncryptedBytes);
+        putMessageBlock(byteBuffer, messageEncryptedBytes);
+
+        return byteBuffer.array();
+    }
+
+    private byte[] getEncryptedMessage() throws Exception {
+        cipher.init(Cipher.ENCRYPT_MODE, this.key);
+        byte[] messageBytes = this.packet.getMessage().getBytes(StandardCharsets.UTF_8);
+        return cipher.doFinal(messageBytes);
+    }
+
+    private void putMetadata(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
         byteBuffer.put(MAGIC_NUMBER);
-        byteBuffer.put(this.source);
-        byteBuffer.putLong(packetID);
-        byteBuffer.putInt(messageBlockLength);
+        byteBuffer.put(this.packet.getSource());
+        byteBuffer.putLong(this.packet.getPacketID());
+        byteBuffer.putInt(messageEncryptedBytes.length + 8);
 
         byte[] metadata = new byte[14];
         byteBuffer.position(0).get(metadata);
-        short metadataCRC = (short)CRC_INSTANCE.calculateCRC(metadata);
+        short metadataCRC = (short) CRC_INSTANCE.calculateCRC(metadata);
         byteBuffer.putShort(metadataCRC);
+    }
 
-        byteBuffer.putInt(commandType);
-        byteBuffer.putInt(userID);
-        byteBuffer.put(this.message);
+    private void putMessageBlock(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
+        byteBuffer.putInt(this.packet.getCommandType());
+        byteBuffer.putInt(this.packet.getUserID());
+        byteBuffer.put(messageEncryptedBytes);
 
-        short messageCRC = (short)CRC_INSTANCE.calculateCRC(this.message);
-        byteBuffer.putShort(messageCRC);
-
-        return byteBuffer.array();
+        byte[] messageBlock = new byte[messageEncryptedBytes.length + 8];
+        byteBuffer.position(16).get(messageBlock);
+        short messageBlockCRC = (short) CRC_INSTANCE.calculateCRC(messageBlock);
+        byteBuffer.putShort(messageBlockCRC);
     }
 }

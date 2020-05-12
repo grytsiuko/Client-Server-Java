@@ -2,6 +2,7 @@ package org.fidoshenyata;
 
 import com.github.snksoft.crc.CRC;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -9,6 +10,7 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import java.nio.ByteBuffer;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 
 public class PacketEncoderTest {
 
@@ -28,15 +30,22 @@ public class PacketEncoderTest {
         key = keyGen.generateKey();
 
         crcInstance = new CRC(CRC.Parameters.CRC16);
+    }
+
+    @Before
+    public void setUPEncoder() throws Exception {
+        PacketBuilder packetBuilder = new PacketBuilder()
+                .setSource((byte) 5)
+                .setUserID(2048)
+                .setCommandType(888)
+                .setPacketID((long) 2)
+                .setMessage("Hello World!");
+        Packet packet = packetBuilder.build();
 
         packetEncoder = new PacketEncoder()
                 .setKey(key)
                 .setAlgorithm("AES")
-                .setSource((byte) 5)
-                .setUserID(2048)
-                .setCommandType(888)
-                .setPacketID(2)
-                .setMessage("Hello World!");
+                .setPacket(packet);
     }
 
     @Test
@@ -84,7 +93,7 @@ public class PacketEncoderTest {
 
         byte[] metadata = new byte[14];
         buffer.get(metadata);
-        short calculatedCRC = (short)crcInstance.calculateCRC(metadata);
+        short calculatedCRC = (short) crcInstance.calculateCRC(metadata);
 
         short packetCRC = buffer.getShort();
         Assert.assertEquals("Metadata CRC should be equal", calculatedCRC, packetCRC);
@@ -132,12 +141,30 @@ public class PacketEncoderTest {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
         int messageLength = buffer.getInt(10);
-        byte[] message = new byte[messageLength - 8];
-        buffer.position(24);
+        byte[] message = new byte[messageLength];
+        buffer.position(16);
         buffer.get(message);
-        short calculatedCRC = (short)crcInstance.calculateCRC(message);
+        short calculatedCRC = (short) crcInstance.calculateCRC(message);
 
         short packetCRC = buffer.getShort();
         Assert.assertEquals("Message CRC should be equal", calculatedCRC, packetCRC);
+    }
+
+    @Test(expected = NoSuchAlgorithmException.class)
+    public void nullCipherAlgorithmTest() throws Exception {
+        packetEncoder.setAlgorithm(null);
+        packetEncoder.encode();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nullPacketTest() throws Exception {
+        packetEncoder.setPacket(null);
+        packetEncoder.encode();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nullKeyTest() throws Exception {
+        packetEncoder.setKey(null);
+        packetEncoder.encode();
     }
 }
