@@ -31,50 +31,113 @@ public class PacketEncoderTest {
 
         packetEncoder = new PacketEncoder()
                 .setKey(key)
-                .setAlgorithm("AES");
-    }
-
-    @Test
-    public void basicTest() throws Exception {
-
-        byte[] bytes = packetEncoder
+                .setAlgorithm("AES")
                 .setSource((byte) 5)
                 .setUserID(2048)
                 .setCommandType(888)
                 .setPacketID(2)
-                .setMessage("Hello World!").encode();
+                .setMessage("Hello World!");
+    }
+
+    @Test
+    public void magicNumberTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
-        Assert.assertEquals("Magic number should be equal", buffer.get(), 0x13);
-        Assert.assertEquals("Source should be equal", buffer.get(), 5);
-        Assert.assertEquals("Packet ID should be equal", buffer.getLong(), 2);
+        Assert.assertEquals("Magic number should be equal", buffer.get(0), 0x13);
+    }
 
-        int messageLength = buffer.getInt();
+    @Test
+    public void sourceTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        Assert.assertEquals("Source should be equal", buffer.get(1), 5);
+    }
+
+    @Test
+    public void packetIDTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        Assert.assertEquals("Packet ID should be equal", buffer.getLong(2), 2);
+    }
+
+    @Test
+    public void packetLengthTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        int messageLength = buffer.getInt(10);
         Assert.assertEquals("Length should be correct", buffer.capacity(), 18 + messageLength);
+    }
 
-        byte[] crc1 = new byte[2];
-        buffer.get(crc1);
+    @Test
+    public void firstCRCTest() throws Exception {
 
-        Assert.assertEquals("Command Type should be equal", buffer.getInt(), 888);
-        Assert.assertEquals("User ID should be equal", buffer.getInt(), 2048);
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
+        byte[] metadata = new byte[14];
+        buffer.get(metadata);
+        short calculatedCRC = (short)crcInstance.calculateCRC(metadata);
+
+        short packetCRC = buffer.getShort();
+        Assert.assertEquals("Metadata CRC should be equal", calculatedCRC, packetCRC);
+    }
+
+    @Test
+    public void commandTypeTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        Assert.assertEquals("Command Type should be equal", buffer.getInt(16), 888);
+    }
+
+    @Test
+    public void userIDTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        Assert.assertEquals("User ID should be equal", buffer.getInt(20), 2048);
+    }
+
+    @Test
+    public void messageTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        int messageLength = buffer.getInt(10);
         byte[] message = new byte[messageLength - 8];
+        buffer.position(24);
         buffer.get(message);
-
-        byte[] crc2 = new byte[2];
-        buffer.get(crc2);
-
-        Assert.assertArrayEquals("Both CRC should be equal", crc1, crc2);
 
         cipher.init(Cipher.DECRYPT_MODE, key);
         String decryptedMessage = new String(cipher.doFinal(message));
         Assert.assertEquals("Message should not be corrupted",
                 "Hello World!", decryptedMessage);
+    }
 
-        long messageCRC = crcInstance.calculateCRC(message);
-        Assert.assertEquals("Less significant CRC byte should be correct",
-                (byte) (messageCRC & 0xff), crc1[1]);
-        Assert.assertEquals("More significant CRC byte should be correct",
-                (byte) ((messageCRC >> 8) & 0xff), crc1[0]);
+    @Test
+    public void secondCRCTest() throws Exception {
+
+        byte[] bytes = packetEncoder.encode();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        int messageLength = buffer.getInt(10);
+        byte[] message = new byte[messageLength - 8];
+        buffer.position(24);
+        buffer.get(message);
+        short calculatedCRC = (short)crcInstance.calculateCRC(message);
+
+        short packetCRC = buffer.getShort();
+        Assert.assertEquals("Message CRC should be equal", calculatedCRC, packetCRC);
     }
 }

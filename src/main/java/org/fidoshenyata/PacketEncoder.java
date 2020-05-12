@@ -22,7 +22,6 @@ public class PacketEncoder {
     private int commandType;
     private int userID;
     private byte[] message;
-    private byte[] crc;
 
 
     public PacketEncoder() {
@@ -61,37 +60,31 @@ public class PacketEncoder {
 
     public PacketEncoder setMessage(String message) throws Exception {
         cipher.init(Cipher.ENCRYPT_MODE, this.key);
-
         this.message = this.cipher.doFinal(message.getBytes(StandardCharsets.UTF_8));
-        calculateCRC();
 
         return this;
     }
 
-    private void calculateCRC() {
-        long codeCRC = CRC_INSTANCE.calculateCRC(this.message);
-        this.crc = new byte[2];
-
-        this.crc[0] = (byte) ((codeCRC >> 8) & 0xff);
-        this.crc[1] = (byte) (codeCRC & 0xff);
-    }
-
     public byte[] encode() {
-        int messageLength = this.message.length + 8;
-        ByteBuffer byteBuffer = ByteBuffer.allocate(18 + messageLength);
+        int messageBlockLength = this.message.length + 8;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(18 + messageBlockLength);
 
         byteBuffer.put(MAGIC_NUMBER);
         byteBuffer.put(this.source);
         byteBuffer.putLong(packetID);
-        byteBuffer.putInt(messageLength);
+        byteBuffer.putInt(messageBlockLength);
 
-        byteBuffer.put(this.crc);
+        byte[] metadata = new byte[14];
+        byteBuffer.position(0).get(metadata);
+        short metadataCRC = (short)CRC_INSTANCE.calculateCRC(metadata);
+        byteBuffer.putShort(metadataCRC);
 
         byteBuffer.putInt(commandType);
         byteBuffer.putInt(userID);
         byteBuffer.put(this.message);
 
-        byteBuffer.put(this.crc);
+        short messageCRC = (short)CRC_INSTANCE.calculateCRC(this.message);
+        byteBuffer.putShort(messageCRC);
 
         return byteBuffer.array();
     }
