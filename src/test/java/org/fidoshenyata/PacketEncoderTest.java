@@ -16,6 +16,7 @@ public class PacketEncoderTest {
 
     private static Key key;
     private static PacketEncoder packetEncoder;
+    private static Packet packet;
     private static CRC crcInstance;
     private static Cipher cipher;
 
@@ -30,18 +31,18 @@ public class PacketEncoderTest {
         key = keyGen.generateKey();
 
         crcInstance = new CRC(CRC.Parameters.CRC16);
-    }
 
-    @Before
-    public void setUPEncoder() throws Exception {
         PacketBuilder packetBuilder = new PacketBuilder()
                 .setSource((byte) 5)
                 .setUserID(2048)
                 .setCommandType(888)
                 .setPacketID((long) 2)
                 .setMessage("Hello World!");
-        Packet packet = packetBuilder.build();
+        packet = packetBuilder.build();
+    }
 
+    @Before
+    public void setUPEncoder() throws Exception {
         packetEncoder = new PacketEncoder()
                 .setKey(key)
                 .setAlgorithm("AES")
@@ -151,8 +152,16 @@ public class PacketEncoderTest {
     }
 
     @Test(expected = NoSuchAlgorithmException.class)
+    public void wrongCipherAlgorithmTest() throws Exception {
+        packetEncoder.setAlgorithm("wrong algorithm");
+        packetEncoder.encode();
+    }
+
+    @Test(expected = IllegalStateException.class)
     public void nullCipherAlgorithmTest() throws Exception {
-        packetEncoder.setAlgorithm(null);
+        PacketEncoder packetEncoder = new PacketEncoder()
+                .setPacket(packet)
+                .setKey(key);
         packetEncoder.encode();
     }
 
