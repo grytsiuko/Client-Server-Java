@@ -39,19 +39,19 @@ public class PacketEncoder {
     }
 
     public byte[] encode() throws Exception {
-        if(this.key == null){
+        if (this.key == null) {
             throw new IllegalStateException("Key is not defined");
         }
-        if(this.cipher == null){
+        if (this.cipher == null) {
             throw new IllegalStateException("Cipher and Algorithm are not defined");
         }
-        if(this.packet == null){
+        if (this.packet == null) {
             throw new IllegalStateException("Packet is not defined");
         }
         return encodeLegalState();
     }
 
-    public byte[] encodeLegalState() throws Exception {
+    private byte[] encodeLegalState() throws Exception {
         byte[] messageEncryptedBytes = getEncryptedMessage();
         ByteBuffer byteBuffer = ByteBuffer.allocate(26 + messageEncryptedBytes.length);
 

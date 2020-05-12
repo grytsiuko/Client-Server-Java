@@ -1,38 +1,16 @@
 package org.fidoshenyata;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public class Packet {
 
-    private byte source;
-    private long packetID;
-    private int commandType;
-    private int userID;
-    private String message;
+    private final byte source;
+    private final long packetID;
+    private final int commandType;
+    private final int userID;
+    private final String message;
 
-    public Packet(byte source, long packetID, int commandType, int userID, String message){
-        this.source = source;
-        this.packetID = packetID;
-        this.commandType = commandType;
-        this.userID = userID;
-        this.message = message;
-    }
-
-    public byte getSource() {
-        return this.source;
-    }
-
-    public long getPacketID() {
-        return this.packetID;
-    }
-
-    public int getCommandType() {
-        return this.commandType;
-    }
-
-    public int getUserID() {
-        return this.userID;
-    }
-
-    public String getMessage() {
-        return this.message;
-    }
 }
