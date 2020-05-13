@@ -16,14 +16,14 @@ public class PacketDecoder {
     private final Cipher cipher;
     private boolean keyChanged;
 
-    public PacketDecoder(String algorithm) throws Exception{
+    public PacketDecoder(String algorithm) throws Exception {
         cipher = Cipher.getInstance(algorithm);
         packetValidator = new PacketValidator();
         packetBuilder = new PacketBuilder();
     }
 
     public Packet decode(byte[] packetArray) throws Exception {
-        if(key == null ) throw  new IllegalStateException("A cipher key is needed");
+        if (key == null) throw new IllegalStateException("A cipher key is needed");
         if (!packetValidator.isValid(packetArray)) throw new IllegalArgumentException("The packet is corrupt");
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
@@ -37,10 +37,9 @@ public class PacketDecoder {
 
     }
 
-    public PacketDecoder setKey(Key key) {
+    public void setKey(Key key) {
         this.key = key;
         keyChanged = !keyChanged;
-        return this;
     }
 
     private String getMessage(ByteBuffer buffer) throws Exception {

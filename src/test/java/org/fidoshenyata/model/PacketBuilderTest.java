@@ -1,4 +1,4 @@
-package org.fidoshenyata;
+package org.fidoshenyata.model;
 
 import org.fidoshenyata.model.Packet;
 import org.fidoshenyata.model.PacketBuilder;
