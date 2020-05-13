@@ -1,4 +1,4 @@
-package org.fidoshenyata;
+package org.fidoshenyata.model;
 
 public class PacketBuilder {
 

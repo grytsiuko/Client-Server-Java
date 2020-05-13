@@ -1,5 +1,7 @@
 package org.fidoshenyata;
 
+import org.fidoshenyata.model.Packet;
+import org.fidoshenyata.model.PacketBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

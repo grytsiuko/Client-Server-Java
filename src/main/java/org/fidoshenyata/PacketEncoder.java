@@ -1,6 +1,7 @@
 package org.fidoshenyata;
 
 import com.github.snksoft.crc.CRC;
+import org.fidoshenyata.model.Packet;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;

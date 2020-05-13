@@ -1,4 +1,4 @@
-package org.fidoshenyata;
+package org.fidoshenyata.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
