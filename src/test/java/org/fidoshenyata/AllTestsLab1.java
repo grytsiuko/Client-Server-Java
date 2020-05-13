@@ -1,7 +1,7 @@
 package org.fidoshenyata;
 
 import org.fidoshenyata.model.PacketBuilderTest;
-import org.fidoshenyata.validator.PacketValidatorTest;
+import org.fidoshenyata.validator.PacketBytesValidatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -9,7 +9,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses(
         {
                 PacketBuilderTest.class,
-                PacketValidatorTest.class,
+                PacketBytesValidatorTest.class,
                 PacketDecoderTest.class,
                 PacketEncoderTest.class
         }

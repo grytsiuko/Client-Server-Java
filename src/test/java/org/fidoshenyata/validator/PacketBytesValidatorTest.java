@@ -11,7 +11,8 @@ import org.junit.Test;
 import javax.crypto.KeyGenerator;
 import java.security.Key;
 
-public class PacketValidatorTest {
+public class PacketBytesValidatorTest {
+
     private static PacketEncoder packetEncoder;
     private static byte[] bytesArray;
     private static Validator<byte[]> validator;
@@ -36,7 +37,7 @@ public class PacketValidatorTest {
                 .setAlgorithm("AES")
                 .setPacket(packet);
 
-        validator = new PacketValidator();
+        validator = new PacketBytesValidator();
     }
 
     @Before

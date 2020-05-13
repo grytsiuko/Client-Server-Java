@@ -4,13 +4,13 @@ import com.github.snksoft.crc.CRC;
 
 import java.nio.ByteBuffer;
 
-public class PacketValidator implements Validator<byte[]> {
+public class PacketBytesValidator implements Validator<byte[]> {
+
+    private static final CRC crcInstance = new CRC(CRC.Parameters.CRC16);
 
     private ByteBuffer buffer;
-    private final CRC crcInstance;
 
-    public PacketValidator() {
-        crcInstance = new CRC(CRC.Parameters.CRC16);
+    public PacketBytesValidator() {
     }
 
     public boolean isValid(byte[] packetArray) {

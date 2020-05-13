@@ -52,13 +52,13 @@ public class PacketDecoderTest {
     @Test(expected = BadPaddingException.class)
     public void decodeWithWrongKeyFails() throws Exception {
         packetDecoder.setKey(keyGen.generateKey());
-        Assert.assertNotEquals(packetDecoder.decode(byteArray), packet);
+        packetDecoder.decode(byteArray);
     }
 
     @Test(expected = IllegalStateException.class)
     public void decodeWithOutKeyFails() throws Exception {
         packetDecoder.setKey(null);
-        Assert.assertEquals(packetDecoder.decode(byteArray), packet);
+        packetDecoder.decode(byteArray);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -66,6 +66,6 @@ public class PacketDecoderTest {
         packetDecoder.setKey(key);
         byte[] corruptedByteArray = byteArray.clone();
         corruptedByteArray[7] = 12;
-        Assert.assertEquals(packetDecoder.decode(corruptedByteArray), packet);
+        packetDecoder.decode(corruptedByteArray);
     }
 }

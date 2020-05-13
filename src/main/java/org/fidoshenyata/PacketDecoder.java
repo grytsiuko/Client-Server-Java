@@ -2,7 +2,8 @@ package org.fidoshenyata;
 
 import org.fidoshenyata.model.Packet;
 import org.fidoshenyata.model.PacketBuilder;
-import org.fidoshenyata.validator.PacketValidator;
+import org.fidoshenyata.validator.PacketBytesValidator;
+import org.fidoshenyata.validator.Validator;
 
 import javax.crypto.Cipher;
 import java.nio.ByteBuffer;
@@ -10,7 +11,8 @@ import java.security.Key;
 
 public class PacketDecoder {
 
-    private final PacketValidator packetValidator;
+    private static final Validator<byte[]> packetBytesValidator = new PacketBytesValidator();
+
     private final PacketBuilder packetBuilder;
     private Key key;
     private final Cipher cipher;
@@ -18,13 +20,16 @@ public class PacketDecoder {
 
     public PacketDecoder(String algorithm) throws Exception {
         cipher = Cipher.getInstance(algorithm);
-        packetValidator = new PacketValidator();
         packetBuilder = new PacketBuilder();
     }
 
     public Packet decode(byte[] packetArray) throws Exception {
-        if (key == null) throw new IllegalStateException("A cipher key is needed");
-        if (!packetValidator.isValid(packetArray)) throw new IllegalArgumentException("The packet is corrupt");
+        if (key == null) {
+            throw new IllegalStateException("A cipher key is needed");
+        }
+        if (!packetBytesValidator.isValid(packetArray)) {
+            throw new IllegalArgumentException("The packet is corrupt");
+        }
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
         return packetBuilder
@@ -34,12 +39,11 @@ public class PacketDecoder {
                 .setUserID(buffer.getInt(20))
                 .setMessage(getMessage(buffer))
                 .build();
-
     }
 
     public void setKey(Key key) {
         this.key = key;
-        keyChanged = !keyChanged;
+        keyChanged = true;
     }
 
     private String getMessage(ByteBuffer buffer) throws Exception {
