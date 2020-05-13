@@ -50,8 +50,14 @@ public class PacketBytesValidatorTest {
     }
 
     @Test
-    public void packetIsInvalid() {
+    public void packetIsInvalidFirstCRC() {
         bytesArray[1] = 67;
+        Assert.assertFalse(validator.isValid(bytesArray));
+    }
+
+    @Test
+    public void packetIsInvalidSecondCRC() {
+        bytesArray[20] = 67;
         Assert.assertFalse(validator.isValid(bytesArray));
     }
 

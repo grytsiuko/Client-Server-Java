@@ -68,7 +68,7 @@ public class PacketEncoder {
         return cipher.doFinal(messageBytes);
     }
 
-    private void putMetadata(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
+    private void putMetadata(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) {
         byteBuffer
                 .put(MAGIC_NUMBER)
                 .put(this.packet.getSource())
@@ -81,7 +81,7 @@ public class PacketEncoder {
         byteBuffer.putShort(metadataCRC);
     }
 
-    private void putMessageBlock(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
+    private void putMessageBlock(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) {
         byteBuffer
                 .putInt(this.packet.getCommandType())
                 .putInt(this.packet.getUserID())
