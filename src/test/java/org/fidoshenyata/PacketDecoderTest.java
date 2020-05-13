@@ -33,9 +33,8 @@ public class PacketDecoderTest {
                 .setMessage("Hello World!");
         packet = packetBuilder.build();
 
-        PacketEncoder packetEncoder = new PacketEncoder()
+        PacketEncoder packetEncoder = new PacketEncoder(algorithm)
                 .setKey(key)
-                .setAlgorithm("AES")
                 .setPacket(packet);
 
         byteArray = packetEncoder.encode();
@@ -45,27 +44,23 @@ public class PacketDecoderTest {
 
     @Test
     public void decodeWithKeySuccess() throws Exception {
-        packetDecoder.setKey(key);
-        Assert.assertEquals(packetDecoder.decode(byteArray), packet);
+        Assert.assertEquals(packetDecoder.setKey(key).decode(byteArray), packet);
     }
 
     @Test(expected = BadPaddingException.class)
     public void decodeWithWrongKeyFails() throws Exception {
-        packetDecoder.setKey(keyGen.generateKey());
-        packetDecoder.decode(byteArray);
+        packetDecoder.setKey(keyGen.generateKey()).decode(byteArray);
     }
 
     @Test(expected = IllegalStateException.class)
     public void decodeWithOutKeyFails() throws Exception {
-        packetDecoder.setKey(null);
-        packetDecoder.decode(byteArray);
+        packetDecoder.setKey(null).decode(byteArray);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void decodeCorruptPacketFails() throws Exception {
-        packetDecoder.setKey(key);
         byte[] corruptedByteArray = byteArray.clone();
         corruptedByteArray[7] = 12;
-        packetDecoder.decode(corruptedByteArray);
+        packetDecoder.setKey(key).decode(corruptedByteArray);
     }
 }

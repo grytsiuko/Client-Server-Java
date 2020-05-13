@@ -18,9 +18,11 @@ public class PacketEncoder {
     private Key key;
     private Cipher cipher;
     private Packet packet;
+    private boolean keyChanged;
 
 
-    public PacketEncoder() {
+    public PacketEncoder(String algorithm) throws Exception {
+        this.cipher = Cipher.getInstance(algorithm);
     }
 
     public PacketEncoder setPacket(Packet packet) {
@@ -30,12 +32,7 @@ public class PacketEncoder {
 
     public PacketEncoder setKey(Key key) {
         this.key = key;
-        return this;
-    }
-
-    public PacketEncoder setAlgorithm(String algorithm)
-            throws NoSuchAlgorithmException, NoSuchPaddingException {
-        this.cipher = Cipher.getInstance(algorithm);
+        keyChanged = true;
         return this;
     }
 
@@ -63,16 +60,20 @@ public class PacketEncoder {
     }
 
     private byte[] getEncryptedMessage() throws Exception {
-        cipher.init(Cipher.ENCRYPT_MODE, this.key);
+        if (keyChanged) {
+            cipher.init(Cipher.ENCRYPT_MODE, this.key);
+            keyChanged = false;
+        }
         byte[] messageBytes = this.packet.getMessage().getBytes(StandardCharsets.UTF_8);
         return cipher.doFinal(messageBytes);
     }
 
     private void putMetadata(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
-        byteBuffer.put(MAGIC_NUMBER);
-        byteBuffer.put(this.packet.getSource());
-        byteBuffer.putLong(this.packet.getPacketID());
-        byteBuffer.putInt(messageEncryptedBytes.length + 8);
+        byteBuffer
+                .put(MAGIC_NUMBER)
+                .put(this.packet.getSource())
+                .putLong(this.packet.getPacketID())
+                .putInt(messageEncryptedBytes.length + 8);
 
         byte[] metadata = new byte[14];
         byteBuffer.position(0).get(metadata);
@@ -81,9 +82,10 @@ public class PacketEncoder {
     }
 
     private void putMessageBlock(ByteBuffer byteBuffer, byte[] messageEncryptedBytes) throws Exception {
-        byteBuffer.putInt(this.packet.getCommandType());
-        byteBuffer.putInt(this.packet.getUserID());
-        byteBuffer.put(messageEncryptedBytes);
+        byteBuffer
+                .putInt(this.packet.getCommandType())
+                .putInt(this.packet.getUserID())
+                .put(messageEncryptedBytes);
 
         byte[] messageBlock = new byte[messageEncryptedBytes.length + 8];
         byteBuffer.position(16).get(messageBlock);

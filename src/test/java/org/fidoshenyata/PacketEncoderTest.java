@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 public class PacketEncoderTest {
 
     private static Key key;
+    private static String algorithm;
     private static PacketEncoder packetEncoder;
     private static Packet packet;
     private static CRC crcInstance;
@@ -26,7 +27,7 @@ public class PacketEncoderTest {
     @BeforeClass
     public static void setUP() throws Exception {
 
-        String algorithm = "AES";
+        algorithm = "AES";
         cipher = Cipher.getInstance(algorithm);
 
         KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
@@ -46,9 +47,8 @@ public class PacketEncoderTest {
 
     @Before
     public void setUPEncoder() throws Exception {
-        packetEncoder = new PacketEncoder()
+        packetEncoder = new PacketEncoder(algorithm)
                 .setKey(key)
-                .setAlgorithm("AES")
                 .setPacket(packet);
 
         byte[] bytes = packetEncoder.encode();
@@ -123,16 +123,7 @@ public class PacketEncoderTest {
 
     @Test(expected = NoSuchAlgorithmException.class)
     public void wrongCipherAlgorithmTest() throws Exception {
-        packetEncoder.setAlgorithm("wrong algorithm");
-        packetEncoder.encode();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void nullCipherAlgorithmTest() throws Exception {
-        PacketEncoder packetEncoder = new PacketEncoder()
-                .setPacket(packet)
-                .setKey(key);
-        packetEncoder.encode();
+        new PacketEncoder("wrong algorithm");
     }
 
     @Test(expected = IllegalStateException.class)

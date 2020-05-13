@@ -30,6 +30,7 @@ public class PacketDecoder {
         if (!packetBytesValidator.isValid(packetArray)) {
             throw new IllegalArgumentException("The packet is corrupt");
         }
+
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
         return packetBuilder
@@ -41,9 +42,10 @@ public class PacketDecoder {
                 .build();
     }
 
-    public void setKey(Key key) {
+    public PacketDecoder setKey(Key key) {
         this.key = key;
         keyChanged = true;
+        return this;
     }
 
     private String getMessage(ByteBuffer buffer) throws Exception {
@@ -51,6 +53,7 @@ public class PacketDecoder {
         byte[] message = new byte[messageLength - 8];
         buffer.position(24);
         buffer.get(message);
+
         if (keyChanged) {
             cipher.init(Cipher.DECRYPT_MODE, key);
             keyChanged = false;

@@ -32,9 +32,8 @@ public class PacketBytesValidatorTest {
                 .setPacketID((long) 2)
                 .setMessage("Hello World!");
         Packet packet = packetBuilder.build();
-        packetEncoder = new PacketEncoder()
+        packetEncoder = new PacketEncoder(algorithm)
                 .setKey(key)
-                .setAlgorithm("AES")
                 .setPacket(packet);
 
         validator = new PacketBytesValidator();
