@@ -1,7 +1,6 @@
 package org.fidoshenyata;
 
 import org.fidoshenyata.model.Packet;
-import org.fidoshenyata.model.PacketBuilder;
 import org.fidoshenyata.validator.PacketBytesValidator;
 import org.fidoshenyata.validator.Validator;
 
@@ -13,14 +12,14 @@ public class PacketDecoder {
 
     private static final Validator<byte[]> packetBytesValidator = new PacketBytesValidator();
 
-    private final PacketBuilder packetBuilder;
+    private final Packet.PacketBuilder packetBuilder;
     private Key key;
     private final Cipher cipher;
     private boolean keyChanged;
 
     public PacketDecoder(String algorithm) throws Exception {
         cipher = Cipher.getInstance(algorithm);
-        packetBuilder = new PacketBuilder();
+        packetBuilder = Packet.builder();
     }
 
     public Packet decode(byte[] packetArray) throws Exception {
@@ -34,11 +33,11 @@ public class PacketDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
         return packetBuilder
-                .setSource(buffer.get(1))
-                .setPacketID(buffer.getLong(2))
-                .setCommandType(buffer.getInt(16))
-                .setUserID(buffer.getInt(20))
-                .setMessage(getMessage(buffer))
+                .source(buffer.get(1))
+                .packetID(buffer.getLong(2))
+                .commandType(buffer.getInt(16))
+                .userID(buffer.getInt(20))
+                .message(getMessage(buffer))
                 .build();
     }
 

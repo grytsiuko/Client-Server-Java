@@ -2,7 +2,6 @@ package org.fidoshenyata.validator;
 
 import org.fidoshenyata.PacketEncoder;
 import org.fidoshenyata.model.Packet;
-import org.fidoshenyata.model.PacketBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,12 +24,12 @@ public class PacketBytesValidatorTest {
         keyGen.init(128);
         Key key = keyGen.generateKey();
 
-        PacketBuilder packetBuilder = new PacketBuilder()
-                .setSource((byte) 5)
-                .setUserID(2048)
-                .setCommandType(888)
-                .setPacketID((long) 2)
-                .setMessage("Hello World!");
+        Packet.PacketBuilder packetBuilder = Packet.builder()
+                .source((byte) 5)
+                .userID(2048)
+                .commandType(888)
+                .packetID((long) 2)
+                .message("Hello World!");
         Packet packet = packetBuilder.build();
         packetEncoder = new PacketEncoder(algorithm)
                 .setKey(key)

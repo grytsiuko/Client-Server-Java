@@ -4,11 +4,9 @@ import com.github.snksoft.crc.CRC;
 import org.fidoshenyata.model.Packet;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 
 public class PacketEncoder {
 
