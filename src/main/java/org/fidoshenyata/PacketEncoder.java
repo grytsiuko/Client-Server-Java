@@ -4,11 +4,9 @@ import com.github.snksoft.crc.CRC;
 import org.fidoshenyata.model.Packet;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 
 public class PacketEncoder {
 
@@ -39,9 +37,6 @@ public class PacketEncoder {
     public byte[] encode() throws Exception {
         if (this.key == null) {
             throw new IllegalStateException("Key is not defined");
-        }
-        if (this.cipher == null) {
-            throw new IllegalStateException("Cipher and Algorithm are not defined");
         }
         if (this.packet == null) {
             throw new IllegalStateException("Packet is not defined");

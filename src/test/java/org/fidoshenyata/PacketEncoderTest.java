@@ -2,7 +2,6 @@ package org.fidoshenyata;
 
 import com.github.snksoft.crc.CRC;
 import org.fidoshenyata.model.Packet;
-import org.fidoshenyata.model.PacketBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,12 +35,12 @@ public class PacketEncoderTest {
 
         crcInstance = new CRC(CRC.Parameters.CRC16);
 
-        PacketBuilder packetBuilder = new PacketBuilder()
-                .setSource((byte) 5)
-                .setUserID(2048)
-                .setCommandType(888)
-                .setPacketID((long) 2)
-                .setMessage("Hello World!");
+        Packet.PacketBuilder packetBuilder = Packet.builder()
+                .source((byte) 5)
+                .userID(2048)
+                .commandType(888)
+                .packetID((long) 2)
+                .message("Hello World!");
         packet = packetBuilder.build();
     }
 
