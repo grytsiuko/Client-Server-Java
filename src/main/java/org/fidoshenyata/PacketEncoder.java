@@ -38,9 +38,6 @@ public class PacketEncoder {
         if (this.key == null) {
             throw new IllegalStateException("Key is not defined");
         }
-        if (this.cipher == null) {
-            throw new IllegalStateException("Cipher and Algorithm are not defined");
-        }
         if (this.packet == null) {
             throw new IllegalStateException("Packet is not defined");
         }
