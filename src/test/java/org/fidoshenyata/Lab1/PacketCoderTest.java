@@ -1,7 +1,8 @@
-package org.fidoshenyata;
+package org.fidoshenyata.Lab1;
 
 import com.github.snksoft.crc.CRC;
-import org.fidoshenyata.model.Packet;
+import org.fidoshenyata.Lab1.model.Message;
+import org.fidoshenyata.Lab1.model.Packet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -9,27 +10,27 @@ import org.junit.Test;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+
 import java.nio.ByteBuffer;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 
-public class PacketEncoderTest {
+import static org.junit.Assert.*;
+
+public class PacketCoderTest {
 
     private static Key key;
-    private static String algorithm;
-    private static PacketEncoder packetEncoder;
-    private static Packet packet;
     private static CRC crcInstance;
-    private static Cipher cipher;
+    private static Packet packet;
+    private static PacketCoder packetEncoder;
+    private static PacketCoder packetDecoder;
     private ByteBuffer buffer;
+    private static Cipher cipher;
+    private static byte[] byteArray;
 
     @BeforeClass
     public static void setUP() throws Exception {
-
-        algorithm = "AES";
-        cipher = Cipher.getInstance(algorithm);
-
-        KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
+        cipher = Cipher.getInstance("AES");
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(128);
         key = keyGen.generateKey();
 
@@ -37,21 +38,24 @@ public class PacketEncoderTest {
 
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
-                .userID(2048)
-                .commandType(888)
                 .packetID((long) 2)
-                .message("Hello World!");
+                .usefulMessage(
+                        Message.builder()
+                                .userID(2048)
+                                .commandType(888)
+                                .message("Hello World!")
+                                .build()
+                );
         packet = packetBuilder.build();
+
+        packetEncoder =  new PacketCoder(key, Cipher.ENCRYPT_MODE);
+        packetDecoder =  new PacketCoder(key, Cipher.DECRYPT_MODE);
     }
 
     @Before
     public void setUPEncoder() throws Exception {
-        packetEncoder = new PacketEncoder(algorithm)
-                .setKey(key)
-                .setPacket(packet);
-
-        byte[] bytes = packetEncoder.encode();
-        buffer = ByteBuffer.wrap(bytes);
+        byteArray = packetEncoder.encode(packet);
+        buffer = ByteBuffer.wrap(byteArray);
     }
 
     @Test
@@ -120,20 +124,25 @@ public class PacketEncoderTest {
         Assert.assertEquals("Message CRC should be equal", calculatedCRC, packetCRC);
     }
 
-    @Test(expected = NoSuchAlgorithmException.class)
-    public void wrongCipherAlgorithmTest() throws Exception {
-        new PacketEncoder("wrong algorithm");
+    @Test
+    public void decodeWithKeySuccess() throws Exception {
+        Assert.assertEquals(packetDecoder.decode(byteArray), packet);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
+    public void decodeCorruptPacketFails() throws Exception {
+        byte[] corruptedByteArray = byteArray.clone();
+        corruptedByteArray[7] = 12;
+        packetDecoder.decode(corruptedByteArray);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void nullPacketTest() throws Exception {
-        packetEncoder.setPacket(null);
-        packetEncoder.encode();
+        packetEncoder.encode(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void nullKeyTest() throws Exception {
-        packetEncoder.setKey(null);
-        packetEncoder.encode();
+        new PacketCoder(null,1);
     }
 }

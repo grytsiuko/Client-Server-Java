@@ -1,20 +1,16 @@
-package org.fidoshenyata.model;
+package org.fidoshenyata.Lab1.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
-@Builder
 @Getter
-@AllArgsConstructor
+@Builder
+@ToString
 @EqualsAndHashCode
-public class Packet {
-
-    private final byte source;
-    private final long packetID;
+public class Message {
     private final int commandType;
     private final int userID;
     private final String message;
-
 }
