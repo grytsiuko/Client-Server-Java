@@ -10,7 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
 public class PacketCoder {
-    private final static byte MAGIC_NUMBER = 0x13;
+    public final static byte MAGIC_NUMBER = 0x13;
+
     private final static CRC CRC_INSTANCE = new CRC(CRC.Parameters.CRC16);
     private final static PacketBytesValidator packetBytesValidator = new PacketBytesValidator();
     private final Packet.PacketBuilder packetBuilder;
