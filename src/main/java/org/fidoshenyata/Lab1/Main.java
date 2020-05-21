@@ -26,16 +26,12 @@ public class Main {
                                 .message("Hello World!")
                                 .build()
                 );
-
         Packet packet = packetBuilder.build();
 
-        PacketCoder packetEncoder = new PacketCoder(key, Cipher.ENCRYPT_MODE);
-
-        PacketCoder packetDecoder = new PacketCoder(key, Cipher.DECRYPT_MODE);
-
-        byte[] packetBytes = packetEncoder.encode(packet);
+        PacketCoder packetCoder = new PacketCoder(key);
+        byte[] packetBytes = packetCoder.encode(packet);
 
         System.out.println(new String(packetBytes));
-        System.out.println(packetDecoder.decode(packetBytes).getUsefulMessage().getMessage());
+        System.out.println(packetCoder.decode(packetBytes).getUsefulMessage().getMessage());
     }
 }

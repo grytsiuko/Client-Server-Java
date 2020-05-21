@@ -15,27 +15,34 @@ public class PacketCoder {
     private final static PacketBytesValidator packetBytesValidator = new PacketBytesValidator();
     private final Packet.PacketBuilder packetBuilder;
     private final Message.MessageBuilder messageBuilder;
-    private final Cipher cipher;
-    private final int cipherMode;
+    private final Cipher cipherEncrypt;
+    private final Cipher cipherDecrypt;
 
-    public PacketCoder(Key key, int cipherMode) throws Exception {
-        if (key == null) throw new IllegalStateException("Key must be defined");
+    public PacketCoder(Key key) throws Exception {
+        if (key == null) {
+            throw new IllegalStateException("Key must be defined");
+        }
         packetBuilder = Packet.builder();
         messageBuilder = Message.builder();
-        this.cipherMode = cipherMode;
-        cipher = Cipher.getInstance("AES");
-        cipher.init(this.cipherMode, key);
+
+        cipherEncrypt = Cipher.getInstance("AES");
+        cipherDecrypt = Cipher.getInstance("AES");
+
+        cipherEncrypt.init(Cipher.ENCRYPT_MODE, key);
+        cipherDecrypt.init(Cipher.DECRYPT_MODE, key);
     }
 
     public byte[] encode(Packet packet) throws Exception {
-        if (cipherMode == Cipher.DECRYPT_MODE) throw new IllegalStateException("Cannot encode on decrypt mode");
-        if (packet == null) throw new IllegalArgumentException("Packet is not defined");
+        if (packet == null) {
+            throw new IllegalArgumentException("Packet is not defined");
+        }
         return encodeLegalState(packet);
     }
 
     public Packet decode(byte[] packetArray) throws Exception {
-        if (cipherMode == Cipher.ENCRYPT_MODE) throw new IllegalStateException("Cannot decode on encrypt mode");
-        if (!packetBytesValidator.isValid(packetArray)) throw new IllegalArgumentException("The packet is corrupt");
+        if (!packetBytesValidator.isValid(packetArray)) {
+            throw new IllegalArgumentException("The packet is corrupt");
+        }
 
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
@@ -55,7 +62,7 @@ public class PacketCoder {
     private byte[] getEncryptedMessage(Packet packet) throws Exception {
         byte[] messageBytes = packet
                 .getUsefulMessage().getMessage().getBytes(StandardCharsets.UTF_8);
-        return cipher.doFinal(messageBytes);
+        return cipherEncrypt.doFinal(messageBytes);
     }
 
     private String getDecodedMessage(ByteBuffer buffer) throws Exception {
@@ -64,7 +71,7 @@ public class PacketCoder {
         byte[] message = new byte[messageLength - metadataMessageLength];
         buffer.position(24);
         buffer.get(message);
-        return new String(cipher.doFinal(message));
+        return new String(cipherDecrypt.doFinal(message));
     }
 
     private byte[] encodeLegalState(Packet packet) throws Exception {

@@ -21,8 +21,7 @@ public class PacketCoderTest {
     private static Key key;
     private static CRC crcInstance;
     private static Packet packet;
-    private static PacketCoder packetEncoder;
-    private static PacketCoder packetDecoder;
+    private static PacketCoder packetCoder;
     private ByteBuffer buffer;
     private static Cipher cipher;
     private static byte[] byteArray;
@@ -48,13 +47,12 @@ public class PacketCoderTest {
                 );
         packet = packetBuilder.build();
 
-        packetEncoder =  new PacketCoder(key, Cipher.ENCRYPT_MODE);
-        packetDecoder =  new PacketCoder(key, Cipher.DECRYPT_MODE);
+        packetCoder =  new PacketCoder(key);
     }
 
     @Before
     public void setUPEncoder() throws Exception {
-        byteArray = packetEncoder.encode(packet);
+        byteArray = packetCoder.encode(packet);
         buffer = ByteBuffer.wrap(byteArray);
     }
 
@@ -126,23 +124,30 @@ public class PacketCoderTest {
 
     @Test
     public void decodeWithKeySuccess() throws Exception {
-        Assert.assertEquals(packetDecoder.decode(byteArray), packet);
+        Assert.assertEquals(packetCoder.decode(byteArray), packet);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void decodeCorruptPacketFails() throws Exception {
+    public void decodeCorruptPacketFailsCRC_1() throws Exception {
         byte[] corruptedByteArray = byteArray.clone();
         corruptedByteArray[7] = 12;
-        packetDecoder.decode(corruptedByteArray);
+        packetCoder.decode(corruptedByteArray);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void decodeCorruptPacketFailsCRC_2() throws Exception {
+        byte[] corruptedByteArray = byteArray.clone();
+        corruptedByteArray[20] = 12;
+        packetCoder.decode(corruptedByteArray);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void nullPacketTest() throws Exception {
-        packetEncoder.encode(null);
+        packetCoder.encode(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void nullKeyTest() throws Exception {
-        new PacketCoder(null,1);
+        new PacketCoder(null);
     }
 }
