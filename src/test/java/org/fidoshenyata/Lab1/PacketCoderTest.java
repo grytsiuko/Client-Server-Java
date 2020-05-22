@@ -47,7 +47,7 @@ public class PacketCoderTest {
                 );
         packet = packetBuilder.build();
 
-        packetCoder =  new PacketCoder(key);
+        packetCoder = new PacketCoder(key);
     }
 
     @Before
@@ -74,7 +74,7 @@ public class PacketCoderTest {
     @Test
     public void packetLengthTest() {
         int messageLength = buffer.getInt(10);
-        Assert.assertEquals("Length should be correct", buffer.capacity(), 18 + messageLength);
+        Assert.assertEquals("Length should be correct", buffer.capacity(), 26 + messageLength);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class PacketCoderTest {
     @Test
     public void messageTest() throws Exception {
         int messageLength = buffer.getInt(10);
-        byte[] message = new byte[messageLength - 8];
+        byte[] message = new byte[messageLength];
         buffer.position(24);
         buffer.get(message);
 
@@ -113,7 +113,7 @@ public class PacketCoderTest {
     @Test
     public void secondCRCTest() {
         int messageLength = buffer.getInt(10);
-        byte[] message = new byte[messageLength];
+        byte[] message = new byte[messageLength + 8];
         buffer.position(16);
         buffer.get(message);
         short calculatedCRC = (short) crcInstance.calculateCRC(message);

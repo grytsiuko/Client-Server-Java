@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
 public class PacketCoder {
-    public final static byte MAGIC_NUMBER = 0x13;
 
     private final static CRC CRC_INSTANCE = new CRC(CRC.Parameters.CRC16);
     private final static PacketBytesValidator packetBytesValidator = new PacketBytesValidator();
@@ -48,16 +47,35 @@ public class PacketCoder {
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
         return packetBuilder
-                .source(buffer.get(1))
-                .packetID(buffer.getLong(2))
+                .source(buffer.get(Packet.POSITION_SOURCE))
+                .packetID(buffer.getLong(Packet.POSITION_PACKET_ID))
                 .usefulMessage(
                         messageBuilder
-                                .commandType(buffer.getInt(16))
-                                .userID(buffer.getInt(20))
+                                .commandType(buffer.getInt(Packet.POSITION_COMMAND_TYPE))
+                                .userID(buffer.getInt(Packet.POSITION_USER_ID))
                                 .message(getDecodedMessage(buffer))
                                 .build()
                 )
                 .build();
+    }
+
+    private String getDecodedMessage(ByteBuffer buffer) throws Exception {
+        int messageLength = buffer.getInt(Packet.POSITION_LENGTH);
+        byte[] message = new byte[messageLength];
+        buffer.position(Packet.POSITION_MESSAGE);
+        buffer.get(message);
+        return new String(cipherDecrypt.doFinal(message));
+    }
+
+    private byte[] encodeLegalState(Packet packet) throws Exception {
+        byte[] messageEncryptedBytes = getEncryptedMessage(packet);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(
+                Packet.LENGTH_ALL_WITHOUT_MESSAGE + messageEncryptedBytes.length);
+
+        putMetadata(byteBuffer, packet, messageEncryptedBytes);
+        putMessageBlock(byteBuffer, packet, messageEncryptedBytes);
+
+        return byteBuffer.array();
     }
 
     private byte[] getEncryptedMessage(Packet packet) throws Exception {
@@ -66,33 +84,14 @@ public class PacketCoder {
         return cipherEncrypt.doFinal(messageBytes);
     }
 
-    private String getDecodedMessage(ByteBuffer buffer) throws Exception {
-        int messageLength = buffer.getInt(10);
-        int metadataMessageLength = 8;
-        byte[] message = new byte[messageLength - metadataMessageLength];
-        buffer.position(24);
-        buffer.get(message);
-        return new String(cipherDecrypt.doFinal(message));
-    }
-
-    private byte[] encodeLegalState(Packet packet) throws Exception {
-        byte[] messageEncryptedBytes = getEncryptedMessage(packet);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(26 + messageEncryptedBytes.length);
-
-        putMetadata(byteBuffer, packet, messageEncryptedBytes);
-        putMessageBlock(byteBuffer, packet, messageEncryptedBytes);
-
-        return byteBuffer.array();
-    }
-
     private void putMetadata(ByteBuffer byteBuffer, Packet packet, byte[] messageEncryptedBytes) {
         byteBuffer
-                .put(MAGIC_NUMBER)
+                .put(Packet.MAGIC_NUMBER)
                 .put(packet.getSource())
                 .putLong(packet.getPacketID())
-                .putInt(messageEncryptedBytes.length + 8);
+                .putInt(messageEncryptedBytes.length);
 
-        byte[] metadata = new byte[14];
+        byte[] metadata = new byte[Packet.LENGTH_METADATA];
         byteBuffer.position(0).get(metadata);
         short metadataCRC = (short) CRC_INSTANCE.calculateCRC(metadata);
         byteBuffer.putShort(metadataCRC);
@@ -104,8 +103,8 @@ public class PacketCoder {
                 .putInt(packet.getUsefulMessage().getUserID())
                 .put(messageEncryptedBytes);
 
-        byte[] messageBlock = new byte[messageEncryptedBytes.length + 8];
-        byteBuffer.position(16).get(messageBlock);
+        byte[] messageBlock = new byte[messageEncryptedBytes.length + Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE];
+        byteBuffer.position(Packet.POSITION_MESSAGE_BLOCK).get(messageBlock);
         short messageBlockCRC = (short) CRC_INSTANCE.calculateCRC(messageBlock);
         byteBuffer.putShort(messageBlockCRC);
     }
@@ -122,7 +121,7 @@ public class PacketCoder {
         }
 
         private boolean isUncorruptedMetadata() {
-            byte[] metadata = new byte[14];
+            byte[] metadata = new byte[Packet.LENGTH_METADATA];
             buffer.get(metadata);
             short calculatedCRC = (short) CRC_INSTANCE.calculateCRC(metadata);
             short packetCRC = buffer.getShort();
@@ -131,10 +130,10 @@ public class PacketCoder {
 
         private boolean isUncorruptedMessage() {
             int messageLength = buffer.getInt(10);
-            byte[] message = new byte[messageLength];
-            buffer.position(16);
-            buffer.get(message);
-            short calculatedCRC = (short) CRC_INSTANCE.calculateCRC(message);
+            byte[] messageBlock = new byte[Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE + messageLength];
+            buffer.position(Packet.POSITION_MESSAGE_BLOCK);
+            buffer.get(messageBlock);
+            short calculatedCRC = (short) CRC_INSTANCE.calculateCRC(messageBlock);
             short packetCRC = buffer.getShort();
             return packetCRC == calculatedCRC;
         }

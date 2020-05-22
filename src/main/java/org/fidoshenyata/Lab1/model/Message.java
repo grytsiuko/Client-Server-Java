@@ -10,7 +10,16 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class Message {
-    private final int commandType;
-    private final int userID;
+    private final Integer commandType;
+    private final Integer userID;
     private final String message;
+
+    public enum CommandTypes {
+        GET_PRODUCT_COUNT,
+        GET_PRODUCT,
+        ADD_PRODUCT,
+        ADD_PRODUCT_TITLE,
+        SET_PRODUCT_PRICE,
+        ADD_PRODUCT_TO_GROUP
+    }
 }

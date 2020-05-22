@@ -39,7 +39,7 @@ public class NetworkProtocolTCP implements NetworkProtocol {
         byte oneByte[] = new byte[1];
 
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
-            if (PacketCoder.MAGIC_NUMBER == oneByte[0]) {
+            if (Packet.MAGIC_NUMBER == oneByte[0]) {
                 state = 0;
                 byteBuffer = ByteBuffer.allocate(10);
                 packetBytes.reset();
