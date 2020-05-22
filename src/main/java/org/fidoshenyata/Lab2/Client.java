@@ -1,9 +1,8 @@
 package org.fidoshenyata.Lab2;
 
+import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class Client {
@@ -24,9 +23,9 @@ public class Client {
             System.out.println("Client sent");
 //            Packet reply = networkProtocol.receiveMessage(in);
 //            System.out.println("Client received");
-//            return reply;
             in.close();
             out.close();
+//            return reply;
             return null;
         } finally {
             System.out.println("Client closed");
@@ -37,6 +36,24 @@ public class Client {
 
     public Client() throws Exception {
         this.networkProtocol = new NetworkProtocolTCP();
+    }
+
+    public static void main(String[] args) throws Exception {
+        Packet.PacketBuilder packetBuilder = Packet.builder()
+                .source((byte) 5)
+                .packetID((long) 2)
+                .usefulMessage(
+                        Message.builder()
+                                .userID(2048)
+                                .commandType(888)
+                                .message("Hello From Client!")
+                                .build()
+                );
+        Packet packet = packetBuilder.build();
+
+        Client client = new Client();
+        Packet reply = client.send(Server.PORT, packet);
+//        System.out.println(reply.getUsefulMessage().toString());
     }
 
 }

@@ -12,12 +12,11 @@ import java.util.concurrent.Executors;
 public class Server {
 
     private static final int THREADS = 20;
+    public static final int PORT = 59898;
 
-    private int port;
-
-    public void init() {
-        try (ServerSocket listener = new ServerSocket(this.port)) {
-            System.out.println("Server is running on port " + this.port);
+    public static void main(String[] args) {
+        try (ServerSocket listener = new ServerSocket(PORT)) {
+            System.out.println("Server is running on port " + PORT);
             ExecutorService pool = Executors.newFixedThreadPool(THREADS);
             while (true) {
                 pool.execute(new Runner(listener.accept()));
@@ -25,10 +24,6 @@ public class Server {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public Server(int port) {
-        this.port = port;
     }
 
     private static class Runner implements Runnable {

@@ -4,12 +4,14 @@ import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
 
 import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class NetworkProtocolTCP implements NetworkProtocol {
 
@@ -81,6 +83,11 @@ public class NetworkProtocolTCP implements NetworkProtocol {
     }
 
     public NetworkProtocolTCP() throws Exception {
-        packetCoder = new PacketCoder(KEY);
+
+        byte[] keyBytes = "verysecretsecretkey".getBytes("UTF-8");
+        keyBytes = Arrays.copyOf(keyBytes, 16);
+        SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+
+        packetCoder = new PacketCoder(keySpec);
     }
 }

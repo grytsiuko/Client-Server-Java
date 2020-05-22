@@ -7,15 +7,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        new Thread(() -> {
-            try {
-                Server server = new Server(59898);
-                server.init();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
                 .packetID((long) 2)
