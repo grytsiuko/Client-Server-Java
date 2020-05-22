@@ -6,6 +6,7 @@ import org.fidoshenyata.Lab1.model.Packet;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.Key;
 
@@ -13,7 +14,18 @@ public class NetworkUtils {
 
     private PacketCoder packetCoder;
 
-    public Packet receiveMessage(InputStream inputStream) throws Exception {
+    private InputStream inputStream;
+    private OutputStream outputStream;
+
+    public NetworkUtils(Socket socket) throws Exception {
+        this.inputStream = socket.getInputStream();
+        this.outputStream = socket.getOutputStream();
+
+        Key key = new Keys().doHandShake(inputStream, outputStream);
+        packetCoder = new PacketCoder(key);
+    }
+
+    public Packet receiveMessage() throws Exception {
         boolean packetIncomplete = true;
         int state = 0;
         int wLen = 0;
@@ -62,13 +74,14 @@ public class NetworkUtils {
         return packetCoder.decode(fullPacket);
     }
 
-    public void sendMessage(Packet packet, OutputStream outputStream) throws Exception {
+    public void sendMessage(Packet packet) throws Exception {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
         outputStream.flush();
     }
 
-    public NetworkUtils(Key key) throws Exception {
-        packetCoder = new PacketCoder(key);
+    public void closeStreams() throws Exception{
+        inputStream.close();
+        outputStream.close();
     }
 }

@@ -4,7 +4,6 @@ import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
 import java.net.Socket;
-import java.security.Key;
 
 public class Client {
 
@@ -19,20 +18,15 @@ public class Client {
             socket = new Socket("localhost", serverPort);
             System.out.println("Client Connected");
 
-            var in = socket.getInputStream();
-            var out = socket.getOutputStream();
+            NetworkUtils networkUtils = new NetworkUtils(socket);
 
-            Key key = new Keys().doHandShake(in, out);
-            NetworkUtils networkUtils = new NetworkUtils(key);
-
-//            networkUtils.sendMessage(packet, out);
+//            networkUtils.sendMessage(packet);
 //            System.out.println("Client sent");
 //
-//            Packet reply = networkUtils.receiveMessage(in);
+//            Packet reply = networkUtils.receiveMessage();
 //            System.out.println("Client received");
 
-            in.close();
-            out.close();
+            networkUtils.closeStreams();
 //            return reply;
             return null;
         } finally {

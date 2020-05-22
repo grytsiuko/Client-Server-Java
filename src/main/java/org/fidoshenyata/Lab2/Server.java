@@ -37,22 +37,18 @@ public class Server {
         public void run() {
             System.out.println("Server Connected: " + socket);
             try {
-                var in = socket.getInputStream();
-                var out = socket.getOutputStream();
 
-                Key key = new Keys().doHandShake(in, out);
-                NetworkUtils networkUtils = new NetworkUtils(key);
+                NetworkUtils networkUtils = new NetworkUtils(socket);
                 Processor processor = new Processor();
 
-//                Packet packet = networkUtils.receiveMessage(in);
+//                Packet packet = networkUtils.receiveMessage();
 //                System.out.println("Server received: " + packet.getUsefulMessage());
 //
 //                Packet answer = processor.process(packet);
-//                networkUtils.sendMessage(answer, out);
+//                networkUtils.sendMessage(answer);
 //                System.out.println("Server sent");
 
-                in.close();
-                out.close();
+                networkUtils.closeStreams();
             } catch (Exception e) {
                 System.out.println("Server Error:" + socket);
                 e.printStackTrace();
