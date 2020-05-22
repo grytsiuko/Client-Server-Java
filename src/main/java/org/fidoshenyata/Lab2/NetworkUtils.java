@@ -26,9 +26,10 @@ public class NetworkUtils {
     }
 
     public Packet receiveMessage() throws Exception {
+        boolean started = false;
         boolean packetIncomplete = true;
         int state = 0;
-        int wLen = 0;
+        int wLen;
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
         ByteArrayOutputStream packetBytes = new ByteArrayOutputStream();
@@ -36,11 +37,14 @@ public class NetworkUtils {
         byte oneByte[] = new byte[1];
 
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
-            if (Packet.MAGIC_NUMBER == oneByte[0]) {
-                state = 0;
-                byteBuffer = ByteBuffer.allocate(
-                        Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.LENGTH_MAGIC_BYTE);
-                packetBytes.reset();
+            if (!started) {
+                if (Packet.MAGIC_NUMBER == oneByte[0]) {
+                    state = 0;
+                    byteBuffer = ByteBuffer.allocate(
+                            Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.LENGTH_MAGIC_BYTE);
+                    packetBytes.reset();
+                    started = true;
+                }
             } else {
                 byteBuffer.put(oneByte);
                 switch (state) {
@@ -70,6 +74,9 @@ public class NetworkUtils {
             packetBytes.write(oneByte);
         }
 
+        if(packetIncomplete){
+            throw new IllegalArgumentException("Incomplete packet");
+        }
         byte[] fullPacket = packetBytes.toByteArray();
         return packetCoder.decode(fullPacket);
     }
@@ -80,7 +87,7 @@ public class NetworkUtils {
         outputStream.flush();
     }
 
-    public void closeStreams() throws Exception{
+    public void closeStreams() throws Exception {
         inputStream.close();
         outputStream.close();
     }

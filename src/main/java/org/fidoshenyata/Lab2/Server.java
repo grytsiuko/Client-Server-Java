@@ -5,7 +5,6 @@ import org.fidoshenyata.Lab1.model.Packet;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.Key;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,12 +40,12 @@ public class Server {
                 NetworkUtils networkUtils = new NetworkUtils(socket);
                 Processor processor = new Processor();
 
-//                Packet packet = networkUtils.receiveMessage();
-//                System.out.println("Server received: " + packet.getUsefulMessage());
-//
-//                Packet answer = processor.process(packet);
-//                networkUtils.sendMessage(answer);
-//                System.out.println("Server sent");
+                Packet packet = networkUtils.receiveMessage();
+                System.out.println("Server received: " + packet.getUsefulMessage());
+
+                Packet answer = processor.process(packet);
+                networkUtils.sendMessage(answer);
+                System.out.println("Server sent");
 
                 networkUtils.closeStreams();
             } catch (Exception e) {

@@ -20,15 +20,14 @@ public class Client {
 
             NetworkUtils networkUtils = new NetworkUtils(socket);
 
-//            networkUtils.sendMessage(packet);
-//            System.out.println("Client sent");
-//
-//            Packet reply = networkUtils.receiveMessage();
-//            System.out.println("Client received");
+            networkUtils.sendMessage(packet);
+            System.out.println("Client sent");
+
+            Packet reply = networkUtils.receiveMessage();
+            System.out.println("Client received");
 
             networkUtils.closeStreams();
-//            return reply;
-            return null;
+            return reply;
         } finally {
             System.out.println("Client closed");
             socket.close();
@@ -49,16 +48,10 @@ public class Client {
                 );
         Packet packet = packetBuilder.build();
 
-        for (int i = 0; i < 50; i++) {
-            new Thread(() -> {
-                try {
-                    Client client = new Client();
-                    Packet reply = client.send(Server.PORT, packet);
-//                    System.out.println(reply.getUsefulMessage().toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
+        Client client = new Client();
+        for (int k = 0; k < 50; k++) {
+            Packet reply = client.send(Server.PORT, packet);
+            System.out.println(reply.getUsefulMessage().getMessage());
         }
     }
 
