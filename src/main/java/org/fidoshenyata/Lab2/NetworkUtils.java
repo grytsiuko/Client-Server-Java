@@ -3,31 +3,16 @@ package org.fidoshenyata.Lab2;
 import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
-public class NetworkProtocolTCP implements NetworkProtocol {
-
-    public static Key KEY;
-
-    static {
-        try {
-            KEY = KeyGenerator.getInstance("AES").generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-    }
+public class NetworkUtils {
 
     private PacketCoder packetCoder;
 
-    @Override
     public Packet receiveMessage(InputStream inputStream) throws Exception {
         boolean packetIncomplete = true;
         int state = 0;
@@ -41,7 +26,8 @@ public class NetworkProtocolTCP implements NetworkProtocol {
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
             if (Packet.MAGIC_NUMBER == oneByte[0]) {
                 state = 0;
-                byteBuffer = ByteBuffer.allocate(Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.MAGIC_NUMBER.BYTES);
+                byteBuffer = ByteBuffer.allocate(
+                        Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.LENGTH_MAGIC_BYTE);
                 packetBytes.reset();
             } else {
                 byteBuffer.put(oneByte);
@@ -76,19 +62,13 @@ public class NetworkProtocolTCP implements NetworkProtocol {
         return packetCoder.decode(fullPacket);
     }
 
-    @Override
     public void sendMessage(Packet packet, OutputStream outputStream) throws Exception {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
         outputStream.flush();
     }
 
-    public NetworkProtocolTCP() throws Exception {
-
-        byte[] keyBytes = "verysecretsecretkey".getBytes("UTF-8");
-        keyBytes = Arrays.copyOf(keyBytes, 16);
-        SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
-
-        packetCoder = new PacketCoder(keySpec);
+    public NetworkUtils(Key key) throws Exception {
+        packetCoder = new PacketCoder(key);
     }
 }

@@ -1,11 +1,14 @@
 package org.fidoshenyata.Lab2;
 
-import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,14 +43,15 @@ public class Server {
                 var in = socket.getInputStream();
                 var out = socket.getOutputStream();
 
-                NetworkProtocol networkProtocol = new NetworkProtocolTCP();
+                Key key = doHandShake(in, out);
+                NetworkUtils networkUtils = new NetworkUtils(key);
                 Processor processor = new Processor();
 
-                Packet packet = networkProtocol.receiveMessage(in);
+                Packet packet = networkUtils.receiveMessage(in);
                 System.out.println("Server received: " + packet.getUsefulMessage());
 
                 Packet answer = processor.process(packet);
-                networkProtocol.sendMessage(answer, out);
+                networkUtils.sendMessage(answer, out);
                 System.out.println("Server sent");
 
                 in.close();
@@ -63,6 +67,26 @@ public class Server {
                 }
                 System.out.println("Server Closed: " + socket);
             }
+        }
+
+        private Key doHandShake(InputStream inputStream, OutputStream outputStream) throws Exception{
+            Keys keys = new Keys();
+
+            PublicKey publicKey = keys.getPublicKey();
+            byte[] publicKeyEncoded = publicKey.getEncoded();
+            outputStream.write(publicKeyEncoded);
+            outputStream.write(0x13);
+            outputStream.flush();
+
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            for (int oneChar; (oneChar = inputStream.read()) != 0x13;)
+                buffer.write(oneChar);
+
+            PublicKey clientPublicKey =
+                    KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(buffer.toByteArray()));
+            keys.setReceiverPublicKey(clientPublicKey);
+
+            return keys.generateKey();
         }
 
     }

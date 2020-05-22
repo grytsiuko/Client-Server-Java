@@ -25,6 +25,7 @@ public class Packet {
     public final static Integer POSITION_USER_ID = POSITION_COMMAND_TYPE + Integer.BYTES;
     public final static Integer POSITION_MESSAGE = POSITION_USER_ID + Integer.BYTES;
 
+    public final static Integer LENGTH_MAGIC_BYTE = Byte.BYTES;
     public final static Integer LENGTH_METADATA = POSITION_CRC_1;
     public final static Integer LENGTH_METADATA_WITHOUT_LENGTH = POSITION_LENGTH;
     public final static Integer LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE = Integer.BYTES + Integer.BYTES;
