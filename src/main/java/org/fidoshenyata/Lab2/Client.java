@@ -3,13 +3,8 @@ package org.fidoshenyata.Lab2;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 
 public class Client {
 
@@ -27,7 +22,7 @@ public class Client {
             var in = socket.getInputStream();
             var out = socket.getOutputStream();
 
-            Key key = doHandShake(in, out);
+            Key key = new Keys().doHandShake(in, out);
             NetworkUtils networkUtils = new NetworkUtils(key);
 
 //            networkUtils.sendMessage(packet, out);
@@ -45,27 +40,6 @@ public class Client {
             socket.close();
         }
 
-    }
-
-    private Key doHandShake(InputStream inputStream, OutputStream outputStream) throws Exception {
-        Keys keys = new Keys();
-
-        PublicKey publicKey = keys.getPublicKey();
-        byte[] publicKeyEncoded = publicKey.getEncoded();
-
-        outputStream.write(publicKeyEncoded.length);
-        outputStream.write(publicKeyEncoded);
-        outputStream.flush();
-
-        int length = inputStream.read();
-        byte[] inputKey = new byte[length];
-        inputStream.read(inputKey);
-
-        PublicKey serverPublicKey =
-                KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
-        keys.setReceiverPublicKey(serverPublicKey);
-
-        return keys.generateKey();
     }
 
     public static void main(String[] args) throws Exception {

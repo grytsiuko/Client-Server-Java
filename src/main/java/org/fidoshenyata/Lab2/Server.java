@@ -6,9 +6,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,7 +40,7 @@ public class Server {
                 var in = socket.getInputStream();
                 var out = socket.getOutputStream();
 
-                Key key = doHandShake(in, out);
+                Key key = new Keys().doHandShake(in, out);
                 NetworkUtils networkUtils = new NetworkUtils(key);
                 Processor processor = new Processor();
 
@@ -67,26 +64,6 @@ public class Server {
                 }
                 System.out.println("Server Closed: " + socket);
             }
-        }
-
-        private Key doHandShake(InputStream inputStream, OutputStream outputStream) throws Exception{
-            Keys keys = new Keys();
-
-            PublicKey publicKey = keys.getPublicKey();
-            byte[] publicKeyEncoded = publicKey.getEncoded();
-            outputStream.write(publicKeyEncoded.length);
-            outputStream.write(publicKeyEncoded);
-            outputStream.flush();
-
-            int length = inputStream.read();
-            byte[] inputKey = new byte[length];
-            inputStream.read(inputKey);
-
-            PublicKey clientPublicKey =
-                    KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
-            keys.setReceiverPublicKey(clientPublicKey);
-
-            return keys.generateKey();
         }
 
     }
