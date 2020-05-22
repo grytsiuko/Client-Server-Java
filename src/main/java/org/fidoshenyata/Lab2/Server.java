@@ -39,23 +39,14 @@ public class Server {
             try {
                 var in = socket.getInputStream();
                 var out = socket.getOutputStream();
+
                 NetworkProtocol networkProtocol = new NetworkProtocolTCP();
+                Processor processor = new Processor();
 
                 Packet packet = networkProtocol.receiveMessage(in);
                 System.out.println("Server received: " + packet.getUsefulMessage());
 
-                Packet.PacketBuilder packetBuilder = Packet.builder()
-                        .source((byte) 5)
-                        .packetID((long) 2)
-                        .usefulMessage(
-                                Message.builder()
-                                        .userID(2048)
-                                        .commandType(888)
-                                        .message("Hello From Server!")
-                                        .build()
-                        );
-                Packet answer = packetBuilder.build();
-
+                Packet answer = processor.process(packet);
                 networkProtocol.sendMessage(answer, out);
                 System.out.println("Server sent");
 
