@@ -41,7 +41,7 @@ public class NetworkProtocolTCP implements NetworkProtocol {
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
             if (Packet.MAGIC_NUMBER == oneByte[0]) {
                 state = 0;
-                byteBuffer = ByteBuffer.allocate(10);
+                byteBuffer = ByteBuffer.allocate(Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.MAGIC_NUMBER.BYTES);
                 packetBytes.reset();
             } else {
                 byteBuffer.put(oneByte);
@@ -56,7 +56,8 @@ public class NetworkProtocolTCP implements NetworkProtocol {
                     case 1:
                         if (!byteBuffer.hasRemaining()) {
                             wLen = byteBuffer.getInt(0);
-                            byteBuffer = ByteBuffer.allocate(Short.BYTES + 8 + wLen + Short.BYTES);
+                            byteBuffer = ByteBuffer.allocate(
+                                    Packet.LENGTH_ALL_WITHOUT_MESSAGE - Packet.LENGTH_METADATA + wLen);
                             state = 2;
                         }
                         break;

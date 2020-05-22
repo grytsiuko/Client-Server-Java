@@ -21,12 +21,11 @@ public class Client {
 
             networkProtocol.sendMessage(packet, out);
             System.out.println("Client sent");
-//            Packet reply = networkProtocol.receiveMessage(in);
-//            System.out.println("Client received");
+            Packet reply = networkProtocol.receiveMessage(in);
+            System.out.println("Client received");
             in.close();
             out.close();
-//            return reply;
-            return null;
+            return reply;
         } finally {
             System.out.println("Client closed");
             socket.close();
@@ -53,7 +52,7 @@ public class Client {
 
         Client client = new Client();
         Packet reply = client.send(Server.PORT, packet);
-//        System.out.println(reply.getUsefulMessage().toString());
+        System.out.println(reply.getUsefulMessage().toString());
     }
 
 }
