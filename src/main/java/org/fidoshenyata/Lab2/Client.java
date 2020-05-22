@@ -3,7 +3,6 @@ package org.fidoshenyata.Lab2;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -31,15 +30,16 @@ public class Client {
             Key key = doHandShake(in, out);
             NetworkUtils networkUtils = new NetworkUtils(key);
 
-            networkUtils.sendMessage(packet, out);
-            System.out.println("Client sent");
-
-            Packet reply = networkUtils.receiveMessage(in);
-            System.out.println("Client received");
+//            networkUtils.sendMessage(packet, out);
+//            System.out.println("Client sent");
+//
+//            Packet reply = networkUtils.receiveMessage(in);
+//            System.out.println("Client received");
 
             in.close();
             out.close();
-            return reply;
+//            return reply;
+            return null;
         } finally {
             System.out.println("Client closed");
             socket.close();
@@ -53,16 +53,16 @@ public class Client {
         PublicKey publicKey = keys.getPublicKey();
         byte[] publicKeyEncoded = publicKey.getEncoded();
 
+        outputStream.write(publicKeyEncoded.length);
         outputStream.write(publicKeyEncoded);
-        outputStream.write(0x13);
         outputStream.flush();
 
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        for (int oneChar; (oneChar = inputStream.read()) != 0x13; )
-            buffer.write(oneChar);
+        int length = inputStream.read();
+        byte[] inputKey = new byte[length];
+        inputStream.read(inputKey);
 
         PublicKey serverPublicKey =
-                KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(buffer.toByteArray()));
+                KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
         keys.setReceiverPublicKey(serverPublicKey);
 
         return keys.generateKey();
@@ -81,10 +81,16 @@ public class Client {
                 );
         Packet packet = packetBuilder.build();
 
-        Client client = new Client();
-        for (int i = 0; i < 10; i++) {
-            Packet reply = client.send(Server.PORT, packet);
-            System.out.println(reply.getUsefulMessage().toString());
+        for (int i = 0; i < 50; i++) {
+            new Thread(() -> {
+                try {
+                    Client client = new Client();
+                    Packet reply = client.send(Server.PORT, packet);
+//                    System.out.println(reply.getUsefulMessage().toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 

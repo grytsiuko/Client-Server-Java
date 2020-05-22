@@ -47,12 +47,12 @@ public class Server {
                 NetworkUtils networkUtils = new NetworkUtils(key);
                 Processor processor = new Processor();
 
-                Packet packet = networkUtils.receiveMessage(in);
-                System.out.println("Server received: " + packet.getUsefulMessage());
-
-                Packet answer = processor.process(packet);
-                networkUtils.sendMessage(answer, out);
-                System.out.println("Server sent");
+//                Packet packet = networkUtils.receiveMessage(in);
+//                System.out.println("Server received: " + packet.getUsefulMessage());
+//
+//                Packet answer = processor.process(packet);
+//                networkUtils.sendMessage(answer, out);
+//                System.out.println("Server sent");
 
                 in.close();
                 out.close();
@@ -74,16 +74,16 @@ public class Server {
 
             PublicKey publicKey = keys.getPublicKey();
             byte[] publicKeyEncoded = publicKey.getEncoded();
+            outputStream.write(publicKeyEncoded.length);
             outputStream.write(publicKeyEncoded);
-            outputStream.write(0x13);
             outputStream.flush();
 
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            for (int oneChar; (oneChar = inputStream.read()) != 0x13;)
-                buffer.write(oneChar);
+            int length = inputStream.read();
+            byte[] inputKey = new byte[length];
+            inputStream.read(inputKey);
 
             PublicKey clientPublicKey =
-                    KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(buffer.toByteArray()));
+                    KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
             keys.setReceiverPublicKey(clientPublicKey);
 
             return keys.generateKey();
