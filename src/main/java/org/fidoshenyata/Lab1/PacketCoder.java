@@ -11,8 +11,8 @@ import java.security.Key;
 
 public class PacketCoder {
 
-    private final static CRC CRC_INSTANCE = new CRC(CRC.Parameters.CRC16);
-    private final static PacketBytesValidator packetBytesValidator = new PacketBytesValidator();
+    private final CRC instanceCRC;
+    private final PacketBytesValidator packetBytesValidator;
     private final Packet.PacketBuilder packetBuilder;
     private final Message.MessageBuilder messageBuilder;
     private final Cipher cipherEncrypt;
@@ -30,6 +30,9 @@ public class PacketCoder {
 
         cipherEncrypt.init(Cipher.ENCRYPT_MODE, key);
         cipherDecrypt.init(Cipher.DECRYPT_MODE, key);
+
+        instanceCRC = new CRC(CRC.Parameters.CRC16);
+        packetBytesValidator = new PacketBytesValidator();
     }
 
     public byte[] encode(Packet packet) throws Exception {
@@ -93,7 +96,7 @@ public class PacketCoder {
 
         byte[] metadata = new byte[Packet.LENGTH_METADATA];
         byteBuffer.position(0).get(metadata);
-        short metadataCRC = (short) CRC_INSTANCE.calculateCRC(metadata);
+        short metadataCRC = (short) instanceCRC.calculateCRC(metadata);
         byteBuffer.putShort(metadataCRC);
     }
 
@@ -105,11 +108,11 @@ public class PacketCoder {
 
         byte[] messageBlock = new byte[messageEncryptedBytes.length + Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE];
         byteBuffer.position(Packet.POSITION_MESSAGE_BLOCK).get(messageBlock);
-        short messageBlockCRC = (short) CRC_INSTANCE.calculateCRC(messageBlock);
+        short messageBlockCRC = (short) instanceCRC.calculateCRC(messageBlock);
         byteBuffer.putShort(messageBlockCRC);
     }
 
-    private static class PacketBytesValidator {
+    private class PacketBytesValidator {
         private ByteBuffer buffer;
 
         public PacketBytesValidator() {
@@ -123,7 +126,7 @@ public class PacketCoder {
         private boolean isUncorruptedMetadata() {
             byte[] metadata = new byte[Packet.LENGTH_METADATA];
             buffer.get(metadata);
-            short calculatedCRC = (short) CRC_INSTANCE.calculateCRC(metadata);
+            short calculatedCRC = (short) instanceCRC.calculateCRC(metadata);
             short packetCRC = buffer.getShort();
             return packetCRC == calculatedCRC;
         }
@@ -133,7 +136,7 @@ public class PacketCoder {
             byte[] messageBlock = new byte[Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE + messageLength];
             buffer.position(Packet.POSITION_MESSAGE_BLOCK);
             buffer.get(messageBlock);
-            short calculatedCRC = (short) CRC_INSTANCE.calculateCRC(messageBlock);
+            short calculatedCRC = (short) instanceCRC.calculateCRC(messageBlock);
             short packetCRC = buffer.getShort();
             return packetCRC == calculatedCRC;
         }

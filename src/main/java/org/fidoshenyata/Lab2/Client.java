@@ -8,31 +8,28 @@ import java.net.Socket;
 public class Client {
 
     private Socket socket;
+    private NetworkUtils networkUtils;
 
     public Client() {
     }
 
-    public Packet send(int serverPort, Packet packet) throws Exception {
-        try {
+    public void connect(int serverPort) throws Exception {
+        socket = new Socket("localhost", serverPort);
+        networkUtils = new NetworkUtils(socket);
+    }
 
-            socket = new Socket("localhost", serverPort);
-//            System.out.println("Client Connected");
-
-            NetworkUtils networkUtils = new NetworkUtils(socket);
-
-            networkUtils.sendMessage(packet);
-//            System.out.println("Client sent");
-
-            Packet reply = networkUtils.receiveMessage();
-//            System.out.println("Client received");
-
-            networkUtils.closeStreams();
-            return reply;
-        } finally {
-//            System.out.println("Client closed");
-            socket.close();
+    public Packet request(Packet packet) throws Exception {
+        if (networkUtils == null) {
+            throw new IllegalStateException("Not connected yet");
         }
 
+        networkUtils.sendMessage(packet);
+        return networkUtils.receiveMessage();
+    }
+
+    public void disconnect() throws Exception {
+        networkUtils.closeStreams();
+        socket.close();
     }
 
     public static void main(String[] args) {
@@ -48,23 +45,34 @@ public class Client {
                 );
         Packet packet = packetBuilder.build();
 
-        final int threads = 5;
-        final int packetsInThread = 1000;
+        final int threads = 10;
+        final int packetsInThread = 50;
 
         for (int k = 0; k < threads; k++) {
             new Thread(() -> {
-                Client client = new Client();
-                int broken = 0;
-                for (int i = 0; i < packetsInThread; i++) {
-                    try {
-                        Packet reply = client.send(Server.PORT, packet);
-//                        System.out.println(i + " " + reply.getUsefulMessage().getMessage());
-                    } catch (Exception e) {
-//                        e.printStackTrace();
-                        broken++;
+                try {
+                    Client client = new Client();
+                    client.connect(Server.PORT);
+
+                    int succeed = 0;
+                    for (int i = 0; i < packetsInThread; i++) {
+                        try {
+                            Packet response = client.request(packet);
+                            String message = response.getUsefulMessage().getMessage();
+                            if (!message.equals("Ok"))
+                                System.out.println("Wrong response: " + message);
+                            else
+                                succeed++;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
+
+                    System.out.println(succeed + " of " + packetsInThread + " are succeed");
+                    client.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                System.out.println(broken + " of " + packetsInThread + " are broken");
             }).start();
         }
     }

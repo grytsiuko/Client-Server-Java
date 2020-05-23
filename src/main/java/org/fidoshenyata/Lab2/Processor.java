@@ -15,7 +15,7 @@ public class Processor {
                         Message.builder()
                                 .userID(2048)
                                 .commandType(888)
-                                .message("Hello From Server!")
+                                .message("Ok")
                                 .build()
                 );
         return packetBuilder.build();

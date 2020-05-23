@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.security.Key;
 
 public class NetworkUtils {
@@ -75,7 +76,7 @@ public class NetworkUtils {
         }
 
         if(packetIncomplete){
-            throw new IllegalArgumentException("Incomplete packet");
+            throw new ClosedChannelException();
         }
         byte[] fullPacket = packetBytes.toByteArray();
         return packetCoder.decode(fullPacket);
