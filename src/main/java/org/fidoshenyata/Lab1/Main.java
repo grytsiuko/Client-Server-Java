@@ -23,7 +23,7 @@ public class Main {
                 .usefulMessage(
                         Message.builder()
                                 .userID(2048)
-                                .commandType(888)
+                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
                                 .message("Hello World!")
                                 .build()
                 );
