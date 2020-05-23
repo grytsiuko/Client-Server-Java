@@ -4,6 +4,9 @@ import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
+import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
+import org.fidoshenyata.exceptions.InvalidMagicByteException;
 
 import javax.crypto.Cipher;
 import java.nio.ByteBuffer;
@@ -44,9 +47,7 @@ public class PacketCoder {
     }
 
     public Packet decode(byte[] packetArray) throws Exception {
-        if (!packetBytesValidator.isValid(packetArray)) {
-            throw new IllegalArgumentException("The packet is corrupt");
-        }
+        packetBytesValidator.validate(packetArray);
 
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
 
@@ -119,27 +120,39 @@ public class PacketCoder {
         public PacketBytesValidator() {
         }
 
-        public boolean isValid(byte[] packetArray) {
+        public void validate(byte[] packetArray) throws Exception{
             buffer = ByteBuffer.wrap(packetArray);
-            return isUncorruptedMetadata() && isUncorruptedMessage();
+            validateMagicByte();
+            validateMetadata();
+            validateMessage();
         }
 
-        private boolean isUncorruptedMetadata() {
+        private void validateMagicByte() throws Exception{
+            if(buffer.get(0) != Packet.MAGIC_NUMBER){
+                throw new InvalidMagicByteException();
+            }
+        }
+
+        private void validateMetadata() throws Exception{
             byte[] metadata = new byte[Packet.LENGTH_METADATA];
             buffer.get(metadata);
             short calculatedCRC = (short) instanceCRC.calculateCRC(metadata);
             short packetCRC = buffer.getShort();
-            return packetCRC == calculatedCRC;
+            if(packetCRC != calculatedCRC){
+                throw new InvalidCRC16_1_Exception();
+            }
         }
 
-        private boolean isUncorruptedMessage() {
+        private void validateMessage() throws Exception{
             int messageLength = buffer.getInt(10);
             byte[] messageBlock = new byte[Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE + messageLength];
             buffer.position(Packet.POSITION_MESSAGE_BLOCK);
             buffer.get(messageBlock);
             short calculatedCRC = (short) instanceCRC.calculateCRC(messageBlock);
             short packetCRC = buffer.getShort();
-            return packetCRC == calculatedCRC;
+            if(packetCRC != calculatedCRC){
+                throw new InvalidCRC16_2_Exception();
+            }
         }
     }
 }
