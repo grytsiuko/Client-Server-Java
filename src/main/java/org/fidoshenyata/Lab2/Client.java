@@ -16,26 +16,26 @@ public class Client {
         try {
 
             socket = new Socket("localhost", serverPort);
-            System.out.println("Client Connected");
+//            System.out.println("Client Connected");
 
             NetworkUtils networkUtils = new NetworkUtils(socket);
 
             networkUtils.sendMessage(packet);
-            System.out.println("Client sent");
+//            System.out.println("Client sent");
 
             Packet reply = networkUtils.receiveMessage();
-            System.out.println("Client received");
+//            System.out.println("Client received");
 
             networkUtils.closeStreams();
             return reply;
         } finally {
-            System.out.println("Client closed");
+//            System.out.println("Client closed");
             socket.close();
         }
 
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
                 .packetID((long) 2)
@@ -48,10 +48,24 @@ public class Client {
                 );
         Packet packet = packetBuilder.build();
 
-        Client client = new Client();
-        for (int k = 0; k < 50; k++) {
-            Packet reply = client.send(Server.PORT, packet);
-            System.out.println(reply.getUsefulMessage().getMessage());
+        final int threads = 5;
+        final int packetsInThread = 1000;
+
+        for (int k = 0; k < threads; k++) {
+            new Thread(() -> {
+                Client client = new Client();
+                int broken = 0;
+                for (int i = 0; i < packetsInThread; i++) {
+                    try {
+                        Packet reply = client.send(Server.PORT, packet);
+//                        System.out.println(i + " " + reply.getUsefulMessage().getMessage());
+                    } catch (Exception e) {
+//                        e.printStackTrace();
+                        broken++;
+                    }
+                }
+                System.out.println(broken + " of " + packetsInThread + " are broken");
+            }).start();
         }
     }
 
