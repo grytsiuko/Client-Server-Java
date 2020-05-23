@@ -1,6 +1,7 @@
 package org.fidoshenyata.Lab1;
 
 import com.github.snksoft.crc.CRC;
+import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
@@ -51,7 +52,7 @@ public class PacketCoder {
 
         return packetBuilder
                 .source(buffer.get(Packet.POSITION_SOURCE))
-                .packetID(buffer.getLong(Packet.POSITION_PACKET_ID))
+                .packetID(UnsignedLong.valueOf(buffer.getLong(Packet.POSITION_PACKET_ID)))
                 .usefulMessage(
                         messageBuilder
                                 .commandType(buffer.getInt(Packet.POSITION_COMMAND_TYPE))
@@ -91,7 +92,7 @@ public class PacketCoder {
         byteBuffer
                 .put(Packet.MAGIC_NUMBER)
                 .put(packet.getSource())
-                .putLong(packet.getPacketID())
+                .putLong(packet.getPacketID().longValue())
                 .putInt(messageEncryptedBytes.length);
 
         byte[] metadata = new byte[Packet.LENGTH_METADATA];

@@ -1,5 +1,6 @@
 package org.fidoshenyata.Lab2;
 
+import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
@@ -35,7 +36,7 @@ public class Client {
     public static void main(String[] args) {
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
-                .packetID((long) 2)
+                .packetID(UnsignedLong.valueOf(2))
                 .usefulMessage(
                         Message.builder()
                                 .userID(2048)

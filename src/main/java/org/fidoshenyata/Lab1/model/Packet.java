@@ -3,6 +3,7 @@ package org.fidoshenyata.Lab1.model;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import com.google.common.primitives.UnsignedLong;
 
 @Getter
 @Builder
@@ -12,7 +13,7 @@ public class Packet {
     public final static Byte MAGIC_NUMBER = 0x13;
 
     private final Byte source;
-    private final Long packetID;
+    private final UnsignedLong packetID;
     private final Message usefulMessage;
 
     public final static Integer POSITION_MAGIC_BYTE = 0;
