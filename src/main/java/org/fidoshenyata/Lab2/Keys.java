@@ -19,7 +19,7 @@ public class Keys {
 
     private String ALGO = "AES";
 
-    Keys() {
+    Keys() throws Exception {
         makeKeyExchangeParams();
     }
 
@@ -44,32 +44,25 @@ public class Keys {
         return keys.generateKey();
     }
 
-    private void makeKeyExchangeParams() {
+    private void makeKeyExchangeParams() throws Exception {
         KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("EC");
-            kpg.initialize(128);
 
-            KeyPair kp = kpg.generateKeyPair();
-            publicKey = kp.getPublic();
+        kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(128);
 
-            keyAgreement = KeyAgreement.getInstance("ECDH");
-            keyAgreement.init(kp.getPrivate());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        KeyPair kp = kpg.generateKeyPair();
+        publicKey = kp.getPublic();
+
+        keyAgreement = KeyAgreement.getInstance("ECDH");
+        keyAgreement.init(kp.getPrivate());
     }
 
     private Key generateKey() {
         return new SecretKeySpec(sharedSecret, ALGO);
     }
 
-    private void setReceiverPublicKey(PublicKey publickey) {
-        try {
-            keyAgreement.doPhase(publickey, true);
-            sharedSecret = keyAgreement.generateSecret();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        }
+    private void setReceiverPublicKey(PublicKey publickey) throws Exception {
+        keyAgreement.doPhase(publickey, true);
+        sharedSecret = keyAgreement.generateSecret();
     }
 }

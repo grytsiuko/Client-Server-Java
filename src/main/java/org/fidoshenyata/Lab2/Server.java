@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 
 public class Server {
 
-    private static final int THREADS = 5;
+    public static final int THREADS = 5;
     public static final int PORT = 59898;
 
     public static void main(String[] args) throws Exception {
