@@ -1,15 +1,17 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.Network;
 
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.Lab2.Processor.Processor;
+import org.fidoshenyata.Lab2.Processor.ProcessorOkImpl;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
 
 public class ServerConnection implements Runnable {
-    private Socket socket;
+    private final Socket socket;
 
-    ServerConnection(Socket socket) {
+    public ServerConnection(Socket socket) {
         this.socket = socket;
     }
 
@@ -19,7 +21,7 @@ public class ServerConnection implements Runnable {
         try {
 
             NetworkUtils networkUtils = new NetworkUtils(socket);
-            Processor processor = new Processor();
+            Processor processor = new ProcessorOkImpl();
 
             while (true) {
                 try {

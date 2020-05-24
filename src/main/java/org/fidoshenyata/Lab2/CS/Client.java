@@ -1,8 +1,9 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.CS;
 
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.Lab2.Network.NetworkUtils;
 
 import java.io.IOException;
 import java.net.Socket;

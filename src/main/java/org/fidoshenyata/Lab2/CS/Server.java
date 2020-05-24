@@ -1,4 +1,6 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.CS;
+
+import org.fidoshenyata.Lab2.Network.ServerConnection;
 
 import java.io.IOException;
 import java.net.ServerSocket;

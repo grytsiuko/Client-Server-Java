@@ -1,23 +1,16 @@
 package org.fidoshenyata.Lab2;
 
-import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
-import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
-import org.fidoshenyata.exceptions.InvalidMagicByteException;
+import org.fidoshenyata.Lab2.CS.Client;
+import org.fidoshenyata.Lab2.CS.Server;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.security.Key;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -25,7 +18,10 @@ import static org.junit.Assert.*;
 public class ClientServerTest {
 
     private Packet packet;
-
+    @BeforeClass
+    public static void beforeClass(){
+        (new Thread(() -> Server.main(null))).start();
+    }
     @Before
     public void setUp() {
         Packet.PacketBuilder packetBuilder = Packet.builder()

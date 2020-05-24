@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.Network;
 
 import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;

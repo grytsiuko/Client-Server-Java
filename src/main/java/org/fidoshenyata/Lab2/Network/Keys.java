@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.Network;
 
 import lombok.Getter;
 

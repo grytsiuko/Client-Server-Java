@@ -1,13 +1,14 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata.Lab2.Processor;
 
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
-public class Processor {
+public class ProcessorOkImpl implements Processor {
 
-    public Processor(){}
+    public ProcessorOkImpl(){}
 
+    @Override
     public Packet process(Packet packet) {
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
