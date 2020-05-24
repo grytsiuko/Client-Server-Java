@@ -2,6 +2,9 @@ package org.fidoshenyata.Lab2.Network;
 
 import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
+import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
+import org.fidoshenyata.exceptions.InvalidMagicByteException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -84,7 +87,12 @@ public class NetworkUtils {
             throw new ClosedChannelException();
         }
         byte[] fullPacket = packetBytes.toByteArray();
-        return packetCoder.decode(fullPacket);
+        try {
+            return packetCoder.decode(fullPacket);
+        } catch (InvalidCRC16_1_Exception | InvalidMagicByteException | InvalidCRC16_2_Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void sendMessage(Packet packet) throws IOException {

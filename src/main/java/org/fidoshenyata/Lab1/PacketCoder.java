@@ -55,7 +55,8 @@ public class PacketCoder {
         return encodeLegalState(packet);
     }
 
-    public Packet decode(byte[] packetArray){
+    public Packet decode(byte[] packetArray)
+            throws InvalidCRC16_1_Exception, InvalidMagicByteException, InvalidCRC16_2_Exception {
         packetBytesValidator.validate(packetArray);
 
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
@@ -139,15 +140,12 @@ public class PacketCoder {
         public PacketBytesValidator() {
         }
 
-        public void validate(byte[] packetArray) {
+        public void validate(byte[] packetArray)
+                throws InvalidMagicByteException, InvalidCRC16_1_Exception, InvalidCRC16_2_Exception {
             buffer = ByteBuffer.wrap(packetArray);
-            try {
-                validateMagicByte();
-                validateMetadata();
-                validateMessage();
-            } catch (InvalidMagicByteException | InvalidCRC16_2_Exception | InvalidCRC16_1_Exception e) {
-                e.printStackTrace();
-            }
+            validateMagicByte();
+            validateMetadata();
+            validateMessage();
         }
 
         private void validateMagicByte() throws InvalidMagicByteException {
