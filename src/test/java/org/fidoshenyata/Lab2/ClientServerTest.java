@@ -15,6 +15,7 @@ import org.junit.Test;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.Key;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,7 +42,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void TestOneThread() throws Exception {
+    public void TestOneThread() throws IOException {
 
         final int packetsInThread = 50;
         long succeedPackets = 0;
@@ -62,7 +63,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void TestMoreThreadsThanServer() throws Exception {
+    public void TestMoreThreadsThanServer() throws InterruptedException {
 
         final int threads = Server.THREADS * 2;
         final int packetsInThread = 50;

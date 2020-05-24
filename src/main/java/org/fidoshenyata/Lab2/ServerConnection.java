@@ -2,6 +2,7 @@ package org.fidoshenyata.Lab2;
 
 import org.fidoshenyata.Lab1.model.Packet;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
 
@@ -29,6 +30,7 @@ public class ServerConnection implements Runnable {
                     networkUtils.sendMessage(answer);
                     System.out.println("Server sent");
                 } catch (ClosedChannelException e) {
+                    System.out.println("Socket was closed");
                     break;
                 }
             }
@@ -36,7 +38,7 @@ public class ServerConnection implements Runnable {
             networkUtils.closeStreams();
             socket.close();
             System.out.println("Server closed connection: " + socket);
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

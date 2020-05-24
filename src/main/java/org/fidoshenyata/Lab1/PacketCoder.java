@@ -8,10 +8,15 @@ import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
 import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
 import org.fidoshenyata.exceptions.InvalidMagicByteException;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 
 public class PacketCoder {
 
@@ -19,34 +24,38 @@ public class PacketCoder {
     private final PacketBytesValidator packetBytesValidator;
     private final Packet.PacketBuilder packetBuilder;
     private final Message.MessageBuilder messageBuilder;
-    private final Cipher cipherEncrypt;
-    private final Cipher cipherDecrypt;
+    private Cipher cipherEncrypt;
+    private Cipher cipherDecrypt;
 
-    public PacketCoder(Key key) throws Exception {
+    public PacketCoder(Key key) throws InvalidKeyException{
         if (key == null) {
             throw new IllegalStateException("Key must be defined");
         }
         packetBuilder = Packet.builder();
         messageBuilder = Message.builder();
 
-        cipherEncrypt = Cipher.getInstance("AES");
-        cipherDecrypt = Cipher.getInstance("AES");
-
-        cipherEncrypt.init(Cipher.ENCRYPT_MODE, key);
-        cipherDecrypt.init(Cipher.DECRYPT_MODE, key);
-
         instanceCRC = new CRC(CRC.Parameters.CRC16);
         packetBytesValidator = new PacketBytesValidator();
+
+        try {
+            cipherEncrypt = Cipher.getInstance("AES");
+            cipherDecrypt = Cipher.getInstance("AES");
+
+            cipherEncrypt.init(Cipher.ENCRYPT_MODE, key);
+            cipherDecrypt.init(Cipher.DECRYPT_MODE, key);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            e.printStackTrace();
+        }
     }
 
-    public byte[] encode(Packet packet) throws Exception {
+    public byte[] encode(Packet packet) {
         if (packet == null) {
             throw new IllegalArgumentException("Packet is not defined");
         }
         return encodeLegalState(packet);
     }
 
-    public Packet decode(byte[] packetArray) throws Exception {
+    public Packet decode(byte[] packetArray){
         packetBytesValidator.validate(packetArray);
 
         ByteBuffer buffer = ByteBuffer.wrap(packetArray);
@@ -64,15 +73,20 @@ public class PacketCoder {
                 .build();
     }
 
-    private String getDecodedMessage(ByteBuffer buffer) throws Exception {
+    private String getDecodedMessage(ByteBuffer buffer) {
         int messageLength = buffer.getInt(Packet.POSITION_LENGTH);
         byte[] message = new byte[messageLength];
         buffer.position(Packet.POSITION_MESSAGE);
         buffer.get(message);
-        return new String(cipherDecrypt.doFinal(message));
+        try {
+            return new String(cipherDecrypt.doFinal(message));
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    private byte[] encodeLegalState(Packet packet) throws Exception {
+    private byte[] encodeLegalState(Packet packet) {
         byte[] messageEncryptedBytes = getEncryptedMessage(packet);
         ByteBuffer byteBuffer = ByteBuffer.allocate(
                 Packet.LENGTH_ALL_WITHOUT_MESSAGE + messageEncryptedBytes.length);
@@ -83,10 +97,15 @@ public class PacketCoder {
         return byteBuffer.array();
     }
 
-    private byte[] getEncryptedMessage(Packet packet) throws Exception {
+    private byte[] getEncryptedMessage(Packet packet){
         byte[] messageBytes = packet
                 .getUsefulMessage().getMessage().getBytes(StandardCharsets.UTF_8);
-        return cipherEncrypt.doFinal(messageBytes);
+        try {
+            return cipherEncrypt.doFinal(messageBytes);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void putMetadata(ByteBuffer byteBuffer, Packet packet, byte[] messageEncryptedBytes) {
@@ -120,20 +139,24 @@ public class PacketCoder {
         public PacketBytesValidator() {
         }
 
-        public void validate(byte[] packetArray) throws Exception{
+        public void validate(byte[] packetArray) {
             buffer = ByteBuffer.wrap(packetArray);
-            validateMagicByte();
-            validateMetadata();
-            validateMessage();
+            try {
+                validateMagicByte();
+                validateMetadata();
+                validateMessage();
+            } catch (InvalidMagicByteException | InvalidCRC16_2_Exception | InvalidCRC16_1_Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        private void validateMagicByte() throws Exception{
+        private void validateMagicByte() throws InvalidMagicByteException {
             if(buffer.get(0) != Packet.MAGIC_NUMBER){
                 throw new InvalidMagicByteException();
             }
         }
 
-        private void validateMetadata() throws Exception{
+        private void validateMetadata() throws InvalidCRC16_1_Exception {
             byte[] metadata = new byte[Packet.LENGTH_METADATA];
             buffer.get(metadata);
             short calculatedCRC = (short) instanceCRC.calculateCRC(metadata);
@@ -143,7 +166,7 @@ public class PacketCoder {
             }
         }
 
-        private void validateMessage() throws Exception{
+        private void validateMessage() throws InvalidCRC16_2_Exception {
             int messageLength = buffer.getInt(10);
             byte[] messageBlock = new byte[Packet.LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE + messageLength];
             buffer.position(Packet.POSITION_MESSAGE_BLOCK);

@@ -4,29 +4,34 @@ import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.security.InvalidKeyException;
 import java.security.Key;
 
 public class NetworkUtils {
 
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
     private PacketCoder packetCoder;
 
-    private InputStream inputStream;
-    private OutputStream outputStream;
-
-    public NetworkUtils(Socket socket) throws Exception {
+    public NetworkUtils(Socket socket) throws IOException {
         this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
 
         Key key = new Keys().doHandShake(inputStream, outputStream);
-        packetCoder = new PacketCoder(key);
+        try {
+            packetCoder = new PacketCoder(key);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
     }
 
-    public Packet receiveMessage() throws Exception {
+    public Packet receiveMessage() throws IOException {
         boolean started = false;
         boolean packetIncomplete = true;
         int state = 0;
@@ -35,7 +40,7 @@ public class NetworkUtils {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
         ByteArrayOutputStream packetBytes = new ByteArrayOutputStream();
 
-        byte oneByte[] = new byte[1];
+        byte[] oneByte = new byte[1];
 
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
             if (!started) {
@@ -82,13 +87,13 @@ public class NetworkUtils {
         return packetCoder.decode(fullPacket);
     }
 
-    public void sendMessage(Packet packet) throws Exception {
+    public void sendMessage(Packet packet) throws IOException {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
         outputStream.flush();
     }
 
-    public void closeStreams() throws Exception {
+    public void closeStreams() throws IOException {
         inputStream.close();
         outputStream.close();
     }

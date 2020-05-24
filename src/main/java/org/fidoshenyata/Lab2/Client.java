@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
+import java.io.IOException;
 import java.net.Socket;
 
 public class Client {
@@ -14,12 +15,12 @@ public class Client {
     public Client() {
     }
 
-    public void connect(int serverPort) throws Exception {
+    public void connect(int serverPort) throws IOException {
         socket = new Socket("localhost", serverPort);
         networkUtils = new NetworkUtils(socket);
     }
 
-    public Packet request(Packet packet) throws Exception {
+    public Packet request(Packet packet) throws IOException {
         if (networkUtils == null) {
             throw new IllegalStateException("Not connected yet");
         }
@@ -28,7 +29,7 @@ public class Client {
         return networkUtils.receiveMessage();
     }
 
-    public void disconnect() throws Exception {
+    public void disconnect() throws IOException {
         networkUtils.closeStreams();
         socket.close();
     }
@@ -46,7 +47,7 @@ public class Client {
                 );
         Packet packet = packetBuilder.build();
 
-        final int threads = 10;
+        final int threads = 2;
         final int packetsInThread = 50;
 
         for (int k = 0; k < threads; k++) {
@@ -57,16 +58,12 @@ public class Client {
 
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {
-                        try {
-                            Packet response = client.request(packet);
-                            String message = response.getUsefulMessage().getMessage();
-                            if (!message.equals("Ok"))
-                                System.out.println("Wrong response: " + message);
-                            else
-                                succeed++;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        Packet response = client.request(packet);
+                        String message = response.getUsefulMessage().getMessage();
+                        if (!message.equals("Ok"))
+                            System.out.println("Wrong response: " + message);
+                        else
+                            succeed++;
                     }
 
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
