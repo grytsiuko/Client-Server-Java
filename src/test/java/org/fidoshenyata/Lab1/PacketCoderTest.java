@@ -1,8 +1,12 @@
 package org.fidoshenyata.Lab1;
 
 import com.github.snksoft.crc.CRC;
+import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
+import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
+import org.fidoshenyata.exceptions.InvalidMagicByteException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,7 +41,7 @@ public class PacketCoderTest {
 
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
-                .packetID((long) 2)
+                .packetID(UnsignedLong.valueOf(2))
                 .usefulMessage(
                         Message.builder()
                                 .userID(2048)
@@ -127,14 +131,21 @@ public class PacketCoderTest {
         Assert.assertEquals(packetCoder.decode(byteArray), packet);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidMagicByteException.class)
+    public void decodeCorruptPacketFailsMagicByte() throws Exception {
+        byte[] corruptedByteArray = byteArray.clone();
+        corruptedByteArray[0] = 0x14;
+        packetCoder.decode(corruptedByteArray);
+    }
+
+    @Test(expected = InvalidCRC16_1_Exception.class)
     public void decodeCorruptPacketFailsCRC_1() throws Exception {
         byte[] corruptedByteArray = byteArray.clone();
         corruptedByteArray[7] = 12;
         packetCoder.decode(corruptedByteArray);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidCRC16_2_Exception.class)
     public void decodeCorruptPacketFailsCRC_2() throws Exception {
         byte[] corruptedByteArray = byteArray.clone();
         corruptedByteArray[20] = 12;
