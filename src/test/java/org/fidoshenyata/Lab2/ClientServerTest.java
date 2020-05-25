@@ -22,8 +22,9 @@ public class ClientServerTest {
     public static void beforeClass(){
         (new Thread(() -> Server.main(null))).start();
     }
+
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         Packet.PacketBuilder packetBuilder = Packet.builder()
                 .source((byte) 5)
                 .packetID(UnsignedLong.valueOf(2))
@@ -35,6 +36,7 @@ public class ClientServerTest {
                                 .build()
                 );
         packet = packetBuilder.build();
+        Thread.sleep(200); // wait until sever is up
     }
 
     @Test
@@ -89,7 +91,7 @@ public class ClientServerTest {
         }
 
         for (int k = 0; k < threads; k++) {
-            threadsArray[k].run();
+            threadsArray[k].start();
         }
 
         for (int k = 0; k < threads; k++) {
