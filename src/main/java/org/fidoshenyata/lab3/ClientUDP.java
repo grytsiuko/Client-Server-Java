@@ -1,6 +1,7 @@
 package org.fidoshenyata.lab3;
 
 import com.google.common.primitives.UnsignedLong;
+import lombok.Getter;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 
@@ -14,6 +15,8 @@ public class ClientUDP {
     private NetworkUDP network;
 
     private int retryCount;
+    @Getter
+    private int packetCount;
 
     private static final int PORT = 4445;
     private static final int RESEND_TIMEOUT = 1000;
@@ -35,6 +38,7 @@ public class ClientUDP {
             network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
             Packet res = network.receiveMessage().getPacket();
             retryCount = 0;
+            packetCount++;
             return res;
         } catch (IOException e) {
             if (retryCount < TIMES_RETRY) {
@@ -52,18 +56,6 @@ public class ClientUDP {
     }
 
     public static void main(String[] args) {
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 19)
-                .packetID(UnsignedLong.valueOf(2))
-                .usefulMessage(
-                        Message.builder()
-                                .userID(2048)
-                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
-                                .message("Hello From Client!")
-                                .build()
-                );
-        Packet packet = packetBuilder.build();
-
         final int threads = 1;
         final int packetsInThread = 10;
         for (int k = 0; k < threads; k++) {
@@ -73,6 +65,18 @@ public class ClientUDP {
                     client.connect();
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {
+                        Packet.PacketBuilder packetBuilder = Packet.builder()
+                                .source((byte) 19)
+                                .packetID(UnsignedLong.valueOf(client.getPacketCount()))
+                                .usefulMessage(
+                                        Message.builder()
+                                                .userID(2048)
+                                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                                                .message("Hello From Client!")
+                                                .build()
+                                );
+
+                        Packet packet = packetBuilder.build();
                         Packet response = client.request(packet);
                         String message = response.getUsefulMessage().getMessage();
                         if (!message.equals("Ok"))
