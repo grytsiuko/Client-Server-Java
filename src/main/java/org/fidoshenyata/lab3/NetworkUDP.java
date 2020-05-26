@@ -20,6 +20,8 @@ public class NetworkUDP {
     private byte[] buf;
     private PacketCoder packetCoder;
 
+    private static final int BUF_LENGTH = 1024;
+
     public NetworkUDP(DatagramSocket socket) {
         this.socket = socket;
         try{
@@ -30,7 +32,7 @@ public class NetworkUDP {
     }
 
     public PacketDestinationInfo receiveMessage() throws IOException {
-        buf = new byte[1024];
+        buf = new byte[BUF_LENGTH];
         DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length);
         socket.receive(datagramPacket);
         try {
@@ -46,6 +48,14 @@ public class NetworkUDP {
 
     public void sendMessage(PacketDestinationInfo packetDI) throws IOException {
         buf = packetCoder.encode(packetDI.getPacket());
+        DatagramPacket packetUpd =
+                new DatagramPacket(buf,buf.length, packetDI.getAddress(), packetDI.getPort());
+        socket.send(packetUpd);
+    }
+
+    public void sendMessageHalfTEST(PacketDestinationInfo packetDI) throws IOException {
+        byte[] fullPacket = packetCoder.encode(packetDI.getPacket());
+        buf = Arrays.copyOf(fullPacket,fullPacket.length/2);
         DatagramPacket packetUpd =
                 new DatagramPacket(buf,buf.length, packetDI.getAddress(), packetDI.getPort());
         socket.send(packetUpd);

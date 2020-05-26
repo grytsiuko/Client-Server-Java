@@ -14,41 +14,55 @@ public class ClientUDP {
     private InetAddress address;
     private NetworkUDP network;
 
-    private int retryCount;
     @Getter
     private int packetCount;
 
     private static final int PORT = 4445;
-    private static final int RESEND_TIMEOUT = 1000;
-    private static final int TIMEOUT_BETWEEN_RESEND = 2000;
-    private static final int TIMES_RETRY = 2;
+    private static final int RESEND_TIMEOUT = 500;
+    private static final int TIMEOUT_BETWEEN_RESEND = 1000;
+    private static final int TIMES_RETRY = 3;
 
     public ClientUDP() {
     }
 
-    public void connect() throws SocketException, UnknownHostException {
-        socket = new DatagramSocket();
-        socket.setSoTimeout(RESEND_TIMEOUT);
-        address = InetAddress.getLocalHost();
-        network = new NetworkUDP(socket);
+    public void connect(){
+        try {
+            socket = new DatagramSocket();
+            socket.setSoTimeout(RESEND_TIMEOUT);
+            address = InetAddress.getLocalHost();
+            network = new NetworkUDP(socket);
+        } catch (SocketException | UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
-    public Packet request(Packet packet) throws InterruptedException {
-        try {
-            network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
-            Packet res = network.receiveMessage().getPacket();
-            retryCount = 0;
-            packetCount++;
-            return res;
-        } catch (IOException e) {
-            if (retryCount < TIMES_RETRY) {
-                retryCount++;
-                System.out.println("retrying for the " + retryCount + " time");
+    public Packet request(Packet packet) throws IOException {
+
+        int resendCounter = 0;
+        while(resendCounter <TIMES_RETRY){
+            try{
+                network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
+                Packet res = network.receiveMessage().getPacket();
+                return res;
+            } catch(IOException e){
+                resendCounter++;
+                if(resendCounter == TIMES_RETRY) throw e;
+                System.out.println("retrying for the " + resendCounter + " time");
+            }
+            try {
                 Thread.sleep(TIMEOUT_BETWEEN_RESEND);
-                return request(packet);
-            } else e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return null;
+    }
+
+    public Packet requestGivingHalfTEST(Packet packet) throws IOException {
+        network.sendMessageHalfTEST(new PacketDestinationInfo(packet, address, PORT));
+        Packet res = network.receiveMessage().getPacket();
+        packetCount++;
+        return res;
     }
 
     public void disconnect() {
@@ -56,7 +70,7 @@ public class ClientUDP {
     }
 
     public static void main(String[] args) {
-        final int threads = 1;
+        final int threads = 10;
         final int packetsInThread = 10;
         for (int k = 0; k < threads; k++) {
             new Thread(() -> {
@@ -79,10 +93,9 @@ public class ClientUDP {
                         Packet packet = packetBuilder.build();
                         Packet response = client.request(packet);
                         String message = response.getUsefulMessage().getMessage();
-                        if (!message.equals("Ok"))
-                            System.out.println("Wrong response: " + message);
-                        else
-                            succeed++;
+
+                        if (!message.equals("Ok")) System.out.println("Wrong response: " + message);
+                        else succeed++;
                     }
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
                     client.disconnect();
