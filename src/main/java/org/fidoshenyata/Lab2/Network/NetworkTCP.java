@@ -16,13 +16,13 @@ import java.nio.channels.ClosedChannelException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 
-public class NetworkUtils {
+public class NetworkTCP {
 
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private PacketCoder packetCoder;
 
-    public NetworkUtils(Socket socket) throws IOException {
+    public NetworkTCP(Socket socket) throws IOException {
         this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
 

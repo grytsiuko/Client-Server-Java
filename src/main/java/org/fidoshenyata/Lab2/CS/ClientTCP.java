@@ -3,35 +3,35 @@ package org.fidoshenyata.Lab2.CS;
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.Lab2.Network.NetworkUtils;
+import org.fidoshenyata.Lab2.Network.NetworkTCP;
 
 import java.io.IOException;
 import java.net.Socket;
 
-public class Client {
+public class ClientTCP {
 
     private Socket socket;
-    private NetworkUtils networkUtils;
+    private NetworkTCP networkTCP;
 
-    public Client() {
+    public ClientTCP() {
     }
 
     public void connect(int serverPort) throws IOException {
         socket = new Socket("localhost", serverPort);
-        networkUtils = new NetworkUtils(socket);
+        networkTCP = new NetworkTCP(socket);
     }
 
     public Packet request(Packet packet) throws IOException {
-        if (networkUtils == null) {
+        if (networkTCP == null) {
             throw new IllegalStateException("Not connected yet");
         }
 
-        networkUtils.sendMessage(packet);
-        return networkUtils.receiveMessage();
+        networkTCP.sendMessage(packet);
+        return networkTCP.receiveMessage();
     }
 
     public void disconnect() throws IOException {
-        networkUtils.closeStreams();
+        networkTCP.closeStreams();
         socket.close();
     }
 
@@ -54,12 +54,12 @@ public class Client {
         for (int k = 0; k < threads; k++) {
             new Thread(() -> {
                 try {
-                    Client client = new Client();
-                    client.connect(Server.PORT);
+                    ClientTCP clientTCP = new ClientTCP();
+                    clientTCP.connect(ServerTCP.PORT);
 
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = client.request(packet);
+                        Packet response = clientTCP.request(packet);
                         String message = response.getUsefulMessage().getMessage();
                         if (!message.equals("Ok"))
                             System.out.println("Wrong response: " + message);
@@ -68,7 +68,7 @@ public class Client {
                     }
 
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
-                    client.disconnect();
+                    clientTCP.disconnect();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

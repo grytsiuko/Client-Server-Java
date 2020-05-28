@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
 
-public class ServerConnection implements Runnable {
+public class ServerConnectionTCP implements Runnable {
     private final Socket socket;
 
-    public ServerConnection(Socket socket) {
+    public ServerConnectionTCP(Socket socket) {
         this.socket = socket;
     }
 
@@ -20,16 +20,16 @@ public class ServerConnection implements Runnable {
         System.out.println("Server opened connection: " + socket);
         try {
 
-            NetworkUtils networkUtils = new NetworkUtils(socket);
+            NetworkTCP networkTCP = new NetworkTCP(socket);
             Processor processor = new ProcessorOkImpl();
 
             while (true) {
                 try {
-                    Packet packet = networkUtils.receiveMessage();
+                    Packet packet = networkTCP.receiveMessage();
                     System.out.println("Server received: " + packet.getUsefulMessage());
 
                     Packet answer = processor.process(packet);
-                    networkUtils.sendMessage(answer);
+                    networkTCP.sendMessage(answer);
                     System.out.println("Server sent");
                 } catch (ClosedChannelException e) {
                     System.out.println("Socket was closed");
@@ -37,7 +37,7 @@ public class ServerConnection implements Runnable {
                 }
             }
 
-            networkUtils.closeStreams();
+            networkTCP.closeStreams();
             socket.close();
             System.out.println("Server closed connection: " + socket);
         } catch (IOException e) {
