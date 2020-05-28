@@ -7,12 +7,15 @@ import org.fidoshenyata.Lab2.Processor.ProcessorOkImpl;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.ExecutorService;
 
 public class ServerConnectionTCP implements Runnable {
     private final Socket socket;
+    private final ExecutorService poolProcessors;
 
-    public ServerConnectionTCP(Socket socket) {
+    public ServerConnectionTCP(Socket socket, ExecutorService poolProcessors) {
         this.socket = socket;
+        this.poolProcessors = poolProcessors;
     }
 
     @Override
@@ -21,16 +24,23 @@ public class ServerConnectionTCP implements Runnable {
         try {
 
             NetworkTCP networkTCP = new NetworkTCP(socket);
-            Processor processor = new ProcessorOkImpl();
 
             while (true) {
                 try {
                     Packet packet = networkTCP.receiveMessage();
                     System.out.println("Server received: " + packet.getUsefulMessage());
 
-                    Packet answer = processor.process(packet);
-                    networkTCP.sendMessage(answer);
-                    System.out.println("Server sent");
+                    poolProcessors.execute(() -> {
+                        try {
+                            Packet answer = new ProcessorOkImpl().process(packet);
+                            synchronized (networkTCP) {
+                                networkTCP.sendMessage(answer);
+                            }
+                            System.out.println("Server sent");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 } catch (ClosedChannelException e) {
                     System.out.println("Socket was closed");
                     break;

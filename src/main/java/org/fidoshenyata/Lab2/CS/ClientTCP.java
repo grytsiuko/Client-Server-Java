@@ -30,6 +30,11 @@ public class ClientTCP {
         return networkTCP.receiveMessage();
     }
 
+    public Packet requestGivingHalfTEST(Packet packet) throws IOException {
+        networkTCP.sendMessageHalfTEST(packet);
+        return networkTCP.receiveMessage();
+    }
+
     public void disconnect() throws IOException {
         networkTCP.closeStreams();
         socket.close();

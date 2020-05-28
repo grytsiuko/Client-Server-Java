@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.util.Arrays;
 
 public class NetworkTCP {
 
@@ -98,6 +99,13 @@ public class NetworkTCP {
     public void sendMessage(Packet packet) throws IOException {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
+        outputStream.flush();
+    }
+
+    public void sendMessageHalfTEST(Packet packet) throws IOException {
+        byte[] packetBytes = packetCoder.encode(packet);
+        byte[] packetPart = Arrays.copyOf(packetBytes,packetBytes.length/2);
+        outputStream.write(packetPart);
         outputStream.flush();
     }
 

@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 public class CsTcpTest {
 
     private Packet packet;
+    private Packet packet2Magic;
+
     @BeforeClass
     public static void beforeClass(){
         (new Thread(() -> ServerTCP.main(null))).start();
@@ -36,6 +38,10 @@ public class CsTcpTest {
                                 .build()
                 );
         packet = packetBuilder.build();
+
+        packetBuilder.packetID(UnsignedLong.valueOf(0x13));
+        packet2Magic = packetBuilder.build();
+
         Thread.sleep(200); // wait until sever is up
     }
 
@@ -99,5 +105,27 @@ public class CsTcpTest {
         }
 
         Assert.assertEquals(expectedSucceedPackets, succeedPackets.longValue());
+    }
+
+    @Test
+    public void test2MagicAndHalfPacket() throws IOException {
+        ClientTCP client = new ClientTCP();
+        client.connect(ServerTCP.PORT);
+
+        Packet response = client.request(packet);
+        String message = response.getUsefulMessage().getMessage();
+        Assert.assertEquals("Ok", message);
+
+        response = client.request(packet2Magic);
+        message = response.getUsefulMessage().getMessage();
+        Assert.assertEquals("Ok", message);
+
+//        response = client.requestGivingHalfTEST(packet2Magic);
+//        message = response.getUsefulMessage().getMessage();
+//        Assert.assertEquals("Corrupt message was given", message);
+
+        response = client.request(packet);
+        message = response.getUsefulMessage().getMessage();
+        Assert.assertEquals("Ok", message);
     }
 }
