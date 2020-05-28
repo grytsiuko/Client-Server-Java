@@ -26,7 +26,7 @@ public class ClientUDP {
 
     private static final int PORT = 4445;
     private static final int RESEND_TIMEOUT = 500;
-    private static final int TIMEOUT_BETWEEN_RESEND = 500;
+    private static final int TIMEOUT_BETWEEN_RESEND = 1000;
     private static final int TIMES_RETRY = 3;
 
     public ClientUDP() {
@@ -105,8 +105,20 @@ public class ClientUDP {
                     }
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
                     client.disconnect();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (DecryptionException e) {
+                    System.out.println("Decryption error occurred");
+                } catch (EncryptionException e) {
+                    System.out.println("Encryption error occurred");
+                } catch (SocketException e) {
+                    System.out.println("Socket error occurred");
+                } catch (UnknownHostException e) {
+                    System.out.println("Unknown host");
+                } catch (CorruptedPacketException e) {
+                    System.out.println("Packet was corrupted");
+                } catch (KeyInitializationException e) {
+                    System.out.println("Illegal key initialization");
+                } catch (NoAnswerException e) {
+                    System.out.println("No answer from server");
                 }
             }).start();
         }
