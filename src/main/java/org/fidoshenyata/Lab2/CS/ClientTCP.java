@@ -4,6 +4,8 @@ import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.Lab2.Network.NetworkTCP;
+import org.fidoshenyata.exceptions.communication.RequestInterruptedException;
+import org.fidoshenyata.exceptions.communication.ServerUnavailableException;
 import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
@@ -15,27 +17,55 @@ import java.net.Socket;
 
 public class ClientTCP {
 
+    private final static int RECONNECTION_TRIES = 5;
+    private final static int RECONNECTION_DELAY = 3000;
+
     private Socket socket;
     private NetworkTCP networkTCP;
+    private int serverPort;
 
     public ClientTCP() {
     }
 
-    public void connect(int serverPort) throws IOException, FailedHandShake {
-        socket = new Socket("localhost", serverPort);
-        networkTCP = new NetworkTCP(socket);
+    public void connect(int serverPort) throws FailedHandShake, ServerUnavailableException {
+        this.serverPort = serverPort;
+        tryToConnect();
+    }
+
+    private void tryToConnect() throws FailedHandShake, ServerUnavailableException {
+        for (int i = 1; i <= RECONNECTION_TRIES; i++) {
+            try {
+                socket = new Socket("localhost", serverPort);
+                networkTCP = new NetworkTCP(socket);
+                return;
+            } catch (IOException e) {
+                System.out.println(i + " try to connect was unsuccessful");
+                if (i == RECONNECTION_TRIES)
+                    throw new ServerUnavailableException();
+                try {
+                    Thread.sleep(RECONNECTION_DELAY);
+                } catch (InterruptedException e1) {
+                    throw new ServerUnavailableException();
+                }
+            }
+        }
     }
 
     public Packet request(Packet packet)
-            throws IOException, EncryptionException, SocketClosedException,
-            DecryptionException, CorruptedPacketException {
+            throws EncryptionException, DecryptionException, CorruptedPacketException,
+            ServerUnavailableException, FailedHandShake, RequestInterruptedException {
 
         if (networkTCP == null) {
             throw new IllegalStateException("Not connected yet");
         }
 
-        networkTCP.sendMessage(packet);
-        return networkTCP.receiveMessage();
+        try {
+            networkTCP.sendMessage(packet);
+            return networkTCP.receiveMessage();
+        } catch (IOException | SocketClosedException e) {
+            tryToConnect();
+            throw new RequestInterruptedException();
+        }
     }
 
     public Packet requestGivingHalfTEST(Packet packet)
@@ -75,12 +105,27 @@ public class ClientTCP {
 
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = clientTCP.request(packet);
-                        String message = response.getUsefulMessage().getMessage();
-                        if (!message.equals("Ok"))
-                            System.out.println("Wrong response: " + message);
-                        else
-                            succeed++;
+                        try {
+
+                            System.out.println("Client sent");
+                            Packet response = clientTCP.request(packet);
+                            String message = response.getUsefulMessage().getMessage();
+                            System.out.println("Client received");
+                            if (!message.equals("Ok"))
+                                System.out.println("Wrong response: " + message);
+                            else
+                                succeed++;
+
+                        } catch (RequestInterruptedException e) {
+                            System.out.println("Connection reestablished");
+                        }
+
+                        // for testing server turning off and on
+//                        try {
+//                            Thread.sleep(3000);
+//                        } catch (InterruptedException e) {
+//                            System.out.println("Thread was interrupted");
+//                        }
                     }
 
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
@@ -91,12 +136,12 @@ public class ClientTCP {
                     System.out.println("HandShake failed");
                 } catch (EncryptionException e) {
                     System.out.println("Encryption error occurred");
-                } catch (SocketClosedException e) {
-                    System.out.println("Socket is closed by server");
                 } catch (IOException e) {
                     System.out.println("IO error occurred, server might be down");
                 } catch (CorruptedPacketException e) {
                     System.out.println("Corrupted packet received");
+                } catch (ServerUnavailableException e) {
+                    System.out.println("Server is currently unavailable");
                 }
             }).start();
         }

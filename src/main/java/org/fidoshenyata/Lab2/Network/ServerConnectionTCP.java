@@ -46,12 +46,6 @@ public class ServerConnectionTCP implements Runnable {
             try {
                 Packet packet = networkTCP.receiveMessage();
                 System.out.println("Server received: " + packet.getUsefulMessage());
-                // for testing sustainability while stopping client or server
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
                 poolProcessors.execute(new ExecutableProcessor(networkTCP, packet));
 
             } catch (SocketClosedException e) {
