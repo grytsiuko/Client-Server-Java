@@ -1,9 +1,10 @@
-package org.fidoshenyata.lab3;
+package org.fidoshenyata.lab3.network;
 
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.Lab2.Processor.Processor;
 import org.fidoshenyata.Lab2.Processor.ProcessorEnum;
 import org.fidoshenyata.Lab2.Processor.ProcessorFactory;
+import org.fidoshenyata.exceptions.cryption.EncryptionException;
 
 import java.io.IOException;
 
@@ -27,6 +28,8 @@ public class ServerConnectionUDP implements Runnable{
             network.sendMessage(new PacketDestinationInfo(res,packetDI.getAddress(),packetDI.getPort()));
         } catch (IOException e) {
             System.out.println("Connection was already closed");
+        } catch (EncryptionException e) {
+            System.out.println("Error while encryption");
         }
     }
 }

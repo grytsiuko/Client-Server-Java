@@ -1,10 +1,11 @@
-package org.fidoshenyata.lab3;
+package org.fidoshenyata.lab3.network;
 
 import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
-import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
-import org.fidoshenyata.exceptions.InvalidMagicByteException;
+import org.fidoshenyata.exceptions.cryption.DecryptionException;
+import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
+import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -22,50 +23,47 @@ public class NetworkUDP {
 
     private static final int BUF_LENGTH = 1024;
 
-    public NetworkUDP(DatagramSocket socket) {
+    public NetworkUDP(DatagramSocket socket) throws KeyInitializationException {
         this.socket = socket;
-        try{
+        try {
             packetCoder = new PacketCoder(generateKey());
-        }catch(InvalidKeyException e){
-            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            throw new KeyInitializationException();
         }
     }
 
-    public PacketDestinationInfo receiveMessage() throws IOException {
+    public PacketDestinationInfo receiveMessage()
+            throws IOException, DecryptionException, CorruptedPacketException {
+
         buf = new byte[BUF_LENGTH];
         DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length);
         socket.receive(datagramPacket);
-        try {
-            Packet packet = packetCoder.decode(datagramPacket.getData());
-            return new PacketDestinationInfo(packet,
-                    datagramPacket.getAddress(), datagramPacket.getPort());
-        } catch (InvalidCRC16_1_Exception | InvalidMagicByteException | InvalidCRC16_2_Exception e) {
-            e.printStackTrace();
-        }
-        return new PacketDestinationInfo(null,
+
+        Packet packet = packetCoder.decode(datagramPacket.getData());
+        return new PacketDestinationInfo(packet,
                 datagramPacket.getAddress(), datagramPacket.getPort());
     }
 
-    public void sendMessage(PacketDestinationInfo packetDI) throws IOException {
+    public void sendMessage(PacketDestinationInfo packetDI) throws IOException, EncryptionException {
         buf = packetCoder.encode(packetDI.getPacket());
         DatagramPacket packetUpd =
-                new DatagramPacket(buf,buf.length, packetDI.getAddress(), packetDI.getPort());
+                new DatagramPacket(buf, buf.length, packetDI.getAddress(), packetDI.getPort());
         socket.send(packetUpd);
     }
 
-    public void sendMessageHalfTEST(PacketDestinationInfo packetDI) throws IOException {
+    public void sendMessageHalfTEST(PacketDestinationInfo packetDI) throws IOException, EncryptionException {
         byte[] fullPacket = packetCoder.encode(packetDI.getPacket());
-        buf = Arrays.copyOf(fullPacket,fullPacket.length/2);
+        buf = Arrays.copyOf(fullPacket, fullPacket.length / 2);
         DatagramPacket packetUpd =
-                new DatagramPacket(buf,buf.length, packetDI.getAddress(), packetDI.getPort());
+                new DatagramPacket(buf, buf.length, packetDI.getAddress(), packetDI.getPort());
         socket.send(packetUpd);
     }
 
-    public void close(){
+    public void close() {
         socket.close();
     }
 
-    private SecretKeySpec generateKey(){
+    private SecretKeySpec generateKey() {
         byte[] keyBytes = "verysecretsecretkey".getBytes(StandardCharsets.UTF_8);
         keyBytes = Arrays.copyOf(keyBytes, 16);
         return new SecretKeySpec(keyBytes, "AES");

@@ -1,4 +1,4 @@
-package org.fidoshenyata.lab3;
+package org.fidoshenyata.lab3.network;
 
 import lombok.*;
 import org.fidoshenyata.Lab1.model.Packet;

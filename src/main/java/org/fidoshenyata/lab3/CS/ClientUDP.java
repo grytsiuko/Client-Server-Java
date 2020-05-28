@@ -1,9 +1,16 @@
-package org.fidoshenyata.lab3;
+package org.fidoshenyata.lab3.CS;
 
 import com.google.common.primitives.UnsignedLong;
 import lombok.Getter;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.exceptions.communication.NoAnswerException;
+import org.fidoshenyata.exceptions.cryption.DecryptionException;
+import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
+import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
+import org.fidoshenyata.lab3.network.NetworkUDP;
+import org.fidoshenyata.lab3.network.PacketDestinationInfo;
 
 import java.io.IOException;
 import java.net.*;
@@ -19,50 +26,49 @@ public class ClientUDP {
 
     private static final int PORT = 4445;
     private static final int RESEND_TIMEOUT = 500;
-    private static final int TIMEOUT_BETWEEN_RESEND = 1000;
+    private static final int TIMEOUT_BETWEEN_RESEND = 500;
     private static final int TIMES_RETRY = 3;
 
     public ClientUDP() {
     }
 
-    public void connect(){
-        try {
-            socket = new DatagramSocket();
-            socket.setSoTimeout(RESEND_TIMEOUT);
-            address = InetAddress.getLocalHost();
-            network = new NetworkUDP(socket);
-        } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
-        }
+    public void connect() throws KeyInitializationException, SocketException, UnknownHostException {
+        socket = new DatagramSocket();
+        socket.setSoTimeout(RESEND_TIMEOUT);
+        address = InetAddress.getLocalHost();
+        network = new NetworkUDP(socket);
     }
 
-    public Packet request(Packet packet) throws IOException {
+    public Packet request(Packet packet)
+            throws EncryptionException, DecryptionException, CorruptedPacketException, NoAnswerException {
 
         int resendCounter = 0;
-        while(resendCounter <TIMES_RETRY){
-            try{
+        while (resendCounter < TIMES_RETRY) {
+            try {
                 network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
-                Packet res = network.receiveMessage().getPacket();
-                return res;
-            } catch(IOException e){
+                return network.receiveMessage().getPacket();
+            } catch (IOException e) {
                 resendCounter++;
-                if(resendCounter == TIMES_RETRY) throw e;
-                System.out.println("retrying for the " + resendCounter + " time");
+                System.out.println("Retrying sending for the " + resendCounter + " time");
             }
+
             try {
                 Thread.sleep(TIMEOUT_BETWEEN_RESEND);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("Interrupted while retrying");
             }
         }
-        return null;
+
+        throw new NoAnswerException();
     }
 
-    public Packet requestGivingHalfTEST(Packet packet) throws IOException {
+    public void requestGivingHalfTEST(Packet packet)
+            throws IOException, EncryptionException, DecryptionException, CorruptedPacketException {
+
         network.sendMessageHalfTEST(new PacketDestinationInfo(packet, address, PORT));
-        Packet res = network.receiveMessage().getPacket();
-        packetCount++;
-        return res;
+//        Packet res = network.receiveMessage().getPacket();
+//        packetCount++;
+//        return res;
     }
 
     public void disconnect() {

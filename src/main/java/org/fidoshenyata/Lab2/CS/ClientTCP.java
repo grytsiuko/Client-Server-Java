@@ -4,6 +4,11 @@ import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.Lab2.Network.NetworkTCP;
+import org.fidoshenyata.exceptions.communication.SocketClosedException;
+import org.fidoshenyata.exceptions.cryption.DecryptionException;
+import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.FailedHandShake;
+import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -16,12 +21,15 @@ public class ClientTCP {
     public ClientTCP() {
     }
 
-    public void connect(int serverPort) throws IOException {
+    public void connect(int serverPort) throws IOException, FailedHandShake {
         socket = new Socket("localhost", serverPort);
         networkTCP = new NetworkTCP(socket);
     }
 
-    public Packet request(Packet packet) throws IOException {
+    public Packet request(Packet packet)
+            throws IOException, EncryptionException, SocketClosedException,
+            DecryptionException, CorruptedPacketException {
+
         if (networkTCP == null) {
             throw new IllegalStateException("Not connected yet");
         }
@@ -30,7 +38,10 @@ public class ClientTCP {
         return networkTCP.receiveMessage();
     }
 
-    public Packet requestGivingHalfTEST(Packet packet) throws IOException {
+    public Packet requestGivingHalfTEST(Packet packet)
+            throws IOException, EncryptionException, SocketClosedException,
+            DecryptionException, CorruptedPacketException {
+
         networkTCP.sendMessageHalfTEST(packet);
         return networkTCP.receiveMessage();
     }

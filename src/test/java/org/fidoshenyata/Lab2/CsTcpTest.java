@@ -46,7 +46,7 @@ public class CsTcpTest {
     }
 
     @Test
-    public void TestOneThread() throws IOException {
+    public void TestOneThread() throws Exception {
 
         final int packetsInThread = 50;
         long succeedPackets = 0;
@@ -108,7 +108,7 @@ public class CsTcpTest {
     }
 
     @Test
-    public void test2MagicAndHalfPacket() throws IOException {
+    public void test2MagicAndHalfPacket() throws Exception {
         ClientTCP client = new ClientTCP();
         client.connect(ServerTCP.PORT);
 

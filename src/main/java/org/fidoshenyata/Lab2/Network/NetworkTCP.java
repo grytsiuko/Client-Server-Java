@@ -2,9 +2,11 @@ package org.fidoshenyata.Lab2.Network;
 
 import org.fidoshenyata.Lab1.PacketCoder;
 import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
-import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
-import org.fidoshenyata.exceptions.InvalidMagicByteException;
+import org.fidoshenyata.exceptions.communication.SocketClosedException;
+import org.fidoshenyata.exceptions.cryption.DecryptionException;
+import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.FailedHandShake;
+import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,7 +14,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.util.Arrays;
@@ -23,19 +24,21 @@ public class NetworkTCP {
     private final OutputStream outputStream;
     private PacketCoder packetCoder;
 
-    public NetworkTCP(Socket socket) throws IOException {
+    public NetworkTCP(Socket socket) throws IOException, FailedHandShake {
         this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
 
-        Key key = new Keys().doHandShake(inputStream, outputStream);
         try {
+            Key key = new Keys().doHandShake(inputStream, outputStream);
             packetCoder = new PacketCoder(key);
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            throw new FailedHandShake();
         }
     }
 
-    public Packet receiveMessage() throws IOException {
+    public Packet receiveMessage()
+            throws IOException, SocketClosedException, CorruptedPacketException, DecryptionException {
+
         boolean started = false;
         boolean packetIncomplete = true;
         int state = 0;
@@ -49,7 +52,6 @@ public class NetworkTCP {
         while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
             if (!started) {
                 if (Packet.MAGIC_NUMBER == oneByte[0]) {
-                    state = 0;
                     byteBuffer = ByteBuffer.allocate(
                             Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.LENGTH_MAGIC_BYTE);
                     packetBytes.reset();
@@ -84,27 +86,22 @@ public class NetworkTCP {
             packetBytes.write(oneByte);
         }
 
-        if(packetIncomplete){
-            throw new ClosedChannelException();
+        if (packetIncomplete) {
+            throw new SocketClosedException();
         }
         byte[] fullPacket = packetBytes.toByteArray();
-        try {
-            return packetCoder.decode(fullPacket);
-        } catch (InvalidCRC16_1_Exception | InvalidMagicByteException | InvalidCRC16_2_Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return packetCoder.decode(fullPacket);
     }
 
-    public void sendMessage(Packet packet) throws IOException {
+    public void sendMessage(Packet packet) throws IOException, EncryptionException {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
         outputStream.flush();
     }
 
-    public void sendMessageHalfTEST(Packet packet) throws IOException {
+    public void sendMessageHalfTEST(Packet packet) throws IOException, EncryptionException {
         byte[] packetBytes = packetCoder.encode(packet);
-        byte[] packetPart = Arrays.copyOf(packetBytes,packetBytes.length/2);
+        byte[] packetPart = Arrays.copyOf(packetBytes, packetBytes.length / 2);
         outputStream.write(packetPart);
         outputStream.flush();
     }

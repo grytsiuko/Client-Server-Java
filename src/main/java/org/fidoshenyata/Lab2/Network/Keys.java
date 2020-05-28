@@ -11,7 +11,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-public class Keys {
+class Keys {
 
     @Getter
     private PublicKey publicKey;
@@ -19,38 +19,7 @@ public class Keys {
     private KeyAgreement keyAgreement;
     private byte[] sharedSecret;
 
-    private String ALGO = "AES";
-
     Keys(){
-        makeKeyExchangeParams();
-    }
-
-    public Key doHandShake(InputStream inputStream, OutputStream outputStream) throws IOException {
-        Keys keys = new Keys();
-
-        PublicKey publicKey = keys.getPublicKey();
-        byte[] publicKeyEncoded = publicKey.getEncoded();
-
-        outputStream.write(publicKeyEncoded.length);
-        outputStream.write(publicKeyEncoded);
-        outputStream.flush();
-
-        int length = inputStream.read();
-        byte[] inputKey = new byte[length];
-        inputStream.read(inputKey);
-
-        try {
-            PublicKey serverPublicKey = KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
-            keys.setReceiverPublicKey(serverPublicKey);
-            return keys.generateKey();
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private void makeKeyExchangeParams(){
         KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance("EC");
@@ -66,8 +35,32 @@ public class Keys {
         }
     }
 
+    Key doHandShake(InputStream inputStream, OutputStream outputStream) throws IOException {
+        Keys keys = new Keys();
+
+        PublicKey publicKey = keys.getPublicKey();
+        byte[] publicKeyEncoded = publicKey.getEncoded();
+
+        outputStream.write(publicKeyEncoded.length);
+        outputStream.write(publicKeyEncoded);
+        outputStream.flush();
+
+        int length = inputStream.read();
+        byte[] inputKey = new byte[length];
+        if (inputStream.read(inputKey) == -1)
+            return null;
+
+        try {
+            PublicKey serverPublicKey = KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
+            keys.setReceiverPublicKey(serverPublicKey);
+            return keys.generateKey();
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidKeyException e) {
+            return null;
+        }
+    }
+
     private Key generateKey() {
-        return new SecretKeySpec(sharedSecret, ALGO);
+        return new SecretKeySpec(sharedSecret, "AES");
     }
 
     private void setReceiverPublicKey(PublicKey publickey) throws InvalidKeyException {

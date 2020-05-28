@@ -4,9 +4,10 @@ import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.exceptions.InvalidCRC16_1_Exception;
-import org.fidoshenyata.exceptions.InvalidCRC16_2_Exception;
-import org.fidoshenyata.exceptions.InvalidMagicByteException;
+import org.fidoshenyata.exceptions.packet.HalfPacketException;
+import org.fidoshenyata.exceptions.packet.InvalidCRC16_1_Exception;
+import org.fidoshenyata.exceptions.packet.InvalidCRC16_2_Exception;
+import org.fidoshenyata.exceptions.packet.InvalidMagicByteException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,8 +18,6 @@ import javax.crypto.KeyGenerator;
 
 import java.nio.ByteBuffer;
 import java.security.Key;
-
-import static org.junit.Assert.*;
 
 public class PacketCoderTest {
 
@@ -160,5 +159,11 @@ public class PacketCoderTest {
     @Test(expected = IllegalStateException.class)
     public void nullKeyTest() throws Exception {
         new PacketCoder(null);
+    }
+
+    @Test(expected = HalfPacketException.class)
+    public void halfPacketDecodeTest() throws Exception {
+        byte[] bytes = {0x13, 1, 2, 3, 4};
+        packetCoder.decode(bytes);
     }
 }
