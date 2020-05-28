@@ -46,11 +46,16 @@ public class ServerConnectionTCP implements Runnable {
             try {
                 Packet packet = networkTCP.receiveMessage();
                 System.out.println("Server received: " + packet.getUsefulMessage());
-
+                // for testing sustainability while stopping client or server
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 poolProcessors.execute(new ExecutableProcessor(networkTCP, packet));
 
             } catch (SocketClosedException e) {
-                System.out.println("Socket was closed by client");
+                System.out.println("Socket was closed by client, unable to receive packet");
                 break;
             } catch (DecryptionException e) {
                 System.out.println("Error while decrypting");
@@ -90,7 +95,7 @@ public class ServerConnectionTCP implements Runnable {
             } catch (EncryptionException e) {
                 System.out.println("Error while encrypting");
             } catch (IOException e) {
-                System.out.println("IO Error");
+                System.out.println("IO Error occurred, client might have closed connection");
             }
         }
     }

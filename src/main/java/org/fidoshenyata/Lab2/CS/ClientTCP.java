@@ -64,8 +64,8 @@ public class ClientTCP {
                 );
         Packet packet = packetBuilder.build();
 
-        final int threads = 2;
-        final int packetsInThread = 50;
+        final int threads = 5;
+        final int packetsInThread = 10;
 
         for (int k = 0; k < threads; k++) {
             new Thread(() -> {
@@ -85,8 +85,18 @@ public class ClientTCP {
 
                     System.out.println(succeed + " of " + packetsInThread + " are succeed");
                     clientTCP.disconnect();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (DecryptionException e) {
+                    System.out.println("Decryption error occurred");
+                } catch (FailedHandShake e) {
+                    System.out.println("HandShake failed");
+                } catch (EncryptionException e) {
+                    System.out.println("Encryption error occurred");
+                } catch (SocketClosedException e) {
+                    System.out.println("Socket is closed by server");
+                } catch (IOException e) {
+                    System.out.println("IO error occurred, server might be down");
+                } catch (CorruptedPacketException e) {
+                    System.out.println("Corrupted packet received");
                 }
             }).start();
         }
