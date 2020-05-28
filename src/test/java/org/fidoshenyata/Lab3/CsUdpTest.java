@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CsUdpTest {
 
@@ -65,12 +66,21 @@ public class CsUdpTest {
     }
 
     @Test
-    public void sendMultipleMessagesConcurrently(){
-        for (int k = 0; k < 10; k++) {
-            new Thread(() -> {
+    public void sendMultipleMessagesConcurrently() throws InterruptedException {
+
+
+        final int threads = 20;
+        final int packetsInThread = 50;
+
+        AtomicInteger succeedPackets = new AtomicInteger(0);
+        long expectedSucceedPackets = threads * packetsInThread;
+
+        Thread[] threadsArray = new Thread[threads];
+        for (int k = 0; k < threads; k++) {
+            threadsArray[k] = new Thread(() -> {
                 ClientUDP client = new ClientUDP();
                 client.connect();
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < packetsInThread; i++) {
                     Packet response = null;
                     try {
                         response = client.request(packet);
@@ -79,9 +89,20 @@ public class CsUdpTest {
                     }
                     String message = response.getUsefulMessage().getMessage();
                     Assert.assertEquals("Ok", message);
+                    succeedPackets.incrementAndGet();
                 }
-            }).start();
+            });
         }
+
+        for (int k = 0; k < threads; k++) {
+            threadsArray[k].start();
+        }
+
+        for (int k = 0; k < threads; k++) {
+            threadsArray[k].join();
+        }
+
+        Assert.assertEquals(expectedSucceedPackets, succeedPackets.longValue());
     }
 
     @Test
