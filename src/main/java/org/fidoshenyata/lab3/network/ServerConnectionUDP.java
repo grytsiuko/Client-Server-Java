@@ -5,6 +5,7 @@ import org.fidoshenyata.Lab2.Processor.Processor;
 import org.fidoshenyata.Lab2.Processor.ProcessorEnum;
 import org.fidoshenyata.Lab2.Processor.ProcessorFactory;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 
 import java.io.IOException;
 
@@ -30,6 +31,8 @@ public class ServerConnectionUDP implements Runnable{
             System.out.println("Connection was already closed");
         } catch (EncryptionException e) {
             System.out.println("Error while encryption");
+        } catch (TooLongMessageException e) {
+            System.out.println("Too long message");
         }
     }
 }

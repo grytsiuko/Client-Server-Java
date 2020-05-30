@@ -8,6 +8,7 @@ import org.fidoshenyata.exceptions.communication.NoAnswerException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 import org.fidoshenyata.lab3.network.NetworkUDP;
 import org.fidoshenyata.lab3.network.PacketDestinationInfo;
@@ -40,7 +41,8 @@ public class ClientUDP {
     }
 
     public Packet request(Packet packet)
-            throws EncryptionException, DecryptionException, CorruptedPacketException, NoAnswerException {
+            throws EncryptionException, DecryptionException, CorruptedPacketException,
+            NoAnswerException, TooLongMessageException {
 
         int resendCounter = 0;
         while (resendCounter < TIMES_RETRY) {
@@ -63,7 +65,7 @@ public class ClientUDP {
     }
 
     public void requestGivingHalfTEST(Packet packet)
-            throws IOException, EncryptionException, DecryptionException, CorruptedPacketException {
+            throws IOException, EncryptionException, TooLongMessageException {
 
         network.sendMessageHalfTEST(new PacketDestinationInfo(packet, address, PORT));
 //        Packet res = network.receiveMessage().getPacket();
@@ -119,6 +121,8 @@ public class ClientUDP {
                     System.out.println("Illegal key initialization");
                 } catch (NoAnswerException e) {
                     System.out.println("No answer from server");
+                } catch (TooLongMessageException e) {
+                    System.out.println("Too long message");
                 }
             }).start();
         }

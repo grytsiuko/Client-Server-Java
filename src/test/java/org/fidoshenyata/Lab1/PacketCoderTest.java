@@ -4,6 +4,7 @@ import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.HalfPacketException;
 import org.fidoshenyata.exceptions.packet.InvalidCRC16_1_Exception;
 import org.fidoshenyata.exceptions.packet.InvalidCRC16_2_Exception;
@@ -165,5 +166,26 @@ public class PacketCoderTest {
     public void halfPacketDecodeTest() throws Exception {
         byte[] bytes = {0x13, 1, 2, 3, 4};
         packetCoder.decode(bytes);
+    }
+
+    @Test(expected = TooLongMessageException.class)
+    public void longMessageTest() throws Exception {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i = 0; i < Message.MAX_MESSAGE_LENGTH + 10; i++){
+            stringBuilder.append("a");
+        }
+
+        Packet.PacketBuilder packetBuilder = Packet.builder()
+                .source((byte) 5)
+                .packetID(UnsignedLong.valueOf(2))
+                .usefulMessage(
+                        Message.builder()
+                                .userID(2048)
+                                .commandType(888)
+                                .message(stringBuilder.toString())
+                                .build()
+                );
+        packetCoder.encode(packetBuilder.build());
     }
 }

@@ -6,6 +6,7 @@ import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.FailedHandShake;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import java.io.IOException;
@@ -90,6 +91,8 @@ public class ServerConnectionTCP implements Runnable {
                 System.out.println("Error while encrypting");
             } catch (IOException e) {
                 System.out.println("IO Error occurred, client might have closed connection");
+            } catch (TooLongMessageException e) {
+                System.out.println("Too long message");
             }
         }
     }

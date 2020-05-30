@@ -14,6 +14,8 @@ public class Message {
     private final Integer userID;
     private final String message;
 
+    public final static Integer MAX_MESSAGE_LENGTH = 512;
+
     public enum CommandTypes {
         GET_PRODUCT_COUNT,
         GET_PRODUCT,

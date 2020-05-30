@@ -31,4 +31,6 @@ public class Packet {
     public final static Integer LENGTH_METADATA_WITHOUT_LENGTH = POSITION_LENGTH;
     public final static Integer LENGTH_MESSAGE_BLOCK_WITHOUT_MESSAGE = Integer.BYTES + Integer.BYTES;
     public final static Integer LENGTH_ALL_WITHOUT_MESSAGE = POSITION_MESSAGE + Short.BYTES;
+
+    public final static Integer MAX_PACKET_LENGTH = LENGTH_ALL_WITHOUT_MESSAGE + Message.MAX_MESSAGE_LENGTH;
 }

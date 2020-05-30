@@ -1,14 +1,15 @@
 package org.fidoshenyata.Lab2.Network;
 
 import org.fidoshenyata.Lab1.PacketCoder;
+import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.FailedHandShake;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,70 +40,47 @@ public class NetworkTCP {
     public Packet receiveMessage()
             throws IOException, SocketClosedException, CorruptedPacketException, DecryptionException {
 
-        boolean started = false;
-        boolean packetIncomplete = true;
-        int state = 0;
-        int wLen;
+        byte[] maxPacketBuffer = new byte[Packet.MAX_PACKET_LENGTH];
 
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES);
-        ByteArrayOutputStream packetBytes = new ByteArrayOutputStream();
-
-        byte[] oneByte = new byte[1];
-
-        while (packetIncomplete && (inputStream.read(oneByte)) != -1) {
-            if (!started) {
-                if (Packet.MAGIC_NUMBER == oneByte[0]) {
-                    byteBuffer = ByteBuffer.allocate(
-                            Packet.LENGTH_METADATA_WITHOUT_LENGTH - Packet.LENGTH_MAGIC_BYTE);
-                    packetBytes.reset();
-                    started = true;
-                }
-            } else {
-                byteBuffer.put(oneByte);
-                switch (state) {
-                    case 0:
-                        if (!byteBuffer.hasRemaining()) {
-                            byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-                            state = 1;
-                        }
-                        break;
-
-                    case 1:
-                        if (!byteBuffer.hasRemaining()) {
-                            wLen = byteBuffer.getInt(0);
-                            byteBuffer = ByteBuffer.allocate(
-                                    Packet.LENGTH_ALL_WITHOUT_MESSAGE - Packet.LENGTH_METADATA + wLen);
-                            state = 2;
-                        }
-                        break;
-
-                    case 2:
-                        if (!byteBuffer.hasRemaining()) {
-                            packetIncomplete = false;
-                        }
-                        break;
-                }
-            }
-            packetBytes.write(oneByte);
-        }
-
-        if (packetIncomplete) {
+        if(inputStream.read(maxPacketBuffer) == -1){
             throw new SocketClosedException();
         }
-        byte[] fullPacket = packetBytes.toByteArray();
-        return packetCoder.decode(fullPacket);
+
+        ByteBuffer byteBuffer = ByteBuffer.wrap(maxPacketBuffer);
+        Integer messageLength = byteBuffer.getInt(Packet.POSITION_LENGTH);
+
+        if (messageLength > Message.MAX_MESSAGE_LENGTH){
+            throw new CorruptedPacketException();
+        }
+
+        byte[] finalPacket = new byte[Packet.LENGTH_ALL_WITHOUT_MESSAGE + messageLength];
+        byteBuffer.position(0);
+        byteBuffer.get(finalPacket);
+
+        return packetCoder.decode(finalPacket);
     }
 
-    public void sendMessage(Packet packet) throws IOException, EncryptionException {
+    public void sendMessage(Packet packet)
+            throws IOException, EncryptionException, TooLongMessageException {
         byte[] packetBytes = packetCoder.encode(packet);
         outputStream.write(packetBytes);
         outputStream.flush();
     }
 
-    public void sendMessageHalfTEST(Packet packet) throws IOException, EncryptionException {
+    public void sendMessageHalfTEST(Packet packet)
+            throws IOException, EncryptionException, TooLongMessageException {
         byte[] packetBytes = packetCoder.encode(packet);
         byte[] packetPart = Arrays.copyOf(packetBytes, packetBytes.length / 2);
         outputStream.write(packetPart);
+        outputStream.flush();
+    }
+
+    public void sendMessageLargeNumbersTEST() throws IOException {
+        byte[] packetBytes = new byte[Packet.MAX_PACKET_LENGTH];
+        for(int i = 0; i < packetBytes.length; i++){
+            packetBytes[i] = 100; // wLen becomes large number - 4 bytes
+        }
+        outputStream.write(packetBytes);
         outputStream.flush();
     }
 

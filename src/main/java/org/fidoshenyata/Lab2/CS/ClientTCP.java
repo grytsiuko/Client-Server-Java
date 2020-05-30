@@ -10,6 +10,7 @@ import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.FailedHandShake;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class ClientTCP {
 
     public Packet request(Packet packet)
             throws EncryptionException, DecryptionException, CorruptedPacketException,
-            ServerUnavailableException, FailedHandShake, RequestInterruptedException {
+            ServerUnavailableException, FailedHandShake, RequestInterruptedException, TooLongMessageException {
 
         if (networkTCP == null) {
             throw new IllegalStateException("Not connected yet");
@@ -68,12 +69,16 @@ public class ClientTCP {
         }
     }
 
-    public Packet requestGivingHalfTEST(Packet packet)
-            throws IOException, EncryptionException, SocketClosedException,
-            DecryptionException, CorruptedPacketException {
+    public void requestGivingHalfTEST(Packet packet)
+            throws IOException, EncryptionException, TooLongMessageException {
 
         networkTCP.sendMessageHalfTEST(packet);
-        return networkTCP.receiveMessage();
+    }
+
+    public void requestGivingLargeNumbersTEST()
+            throws IOException {
+
+        networkTCP.sendMessageLargeNumbersTEST();
     }
 
     public void disconnect() throws IOException {
@@ -118,6 +123,8 @@ public class ClientTCP {
 
                         } catch (RequestInterruptedException e) {
                             System.out.println("Connection reestablished");
+                        } catch (TooLongMessageException e) {
+                            System.out.println("Too long message");
                         }
 
                         // for testing server turning off and on

@@ -6,6 +6,7 @@ import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.*;
 
 import javax.crypto.BadPaddingException;
@@ -79,14 +80,20 @@ public class PacketCoder {
         }
     }
 
-    public byte[] encode(Packet packet) throws EncryptionException {
+    public byte[] encode(Packet packet) throws EncryptionException, TooLongMessageException {
         if (packet == null) {
             throw new IllegalArgumentException("Packet is not defined");
         }
 
         byte[] messageEncryptedBytes = getEncryptedMessage(packet);
+        int messageLength = messageEncryptedBytes.length;
+
+        if(messageLength > Message.MAX_MESSAGE_LENGTH){
+            throw new TooLongMessageException();
+        }
+
         ByteBuffer byteBuffer = ByteBuffer.allocate(
-                Packet.LENGTH_ALL_WITHOUT_MESSAGE + messageEncryptedBytes.length);
+                Packet.LENGTH_ALL_WITHOUT_MESSAGE + messageLength);
 
         putMetadata(byteBuffer, packet, messageEncryptedBytes);
         putMessageBlock(byteBuffer, packet, messageEncryptedBytes);

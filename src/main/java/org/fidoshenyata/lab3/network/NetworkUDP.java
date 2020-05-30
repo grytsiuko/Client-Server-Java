@@ -5,6 +5,7 @@ import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
+import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -21,7 +22,7 @@ public class NetworkUDP {
     private byte[] buf;
     private PacketCoder packetCoder;
 
-    private static final int BUF_LENGTH = 1024;
+    private static final int BUF_LENGTH = Packet.MAX_PACKET_LENGTH;
 
     public NetworkUDP(DatagramSocket socket) throws KeyInitializationException {
         this.socket = socket;
@@ -44,14 +45,16 @@ public class NetworkUDP {
                 datagramPacket.getAddress(), datagramPacket.getPort());
     }
 
-    public void sendMessage(PacketDestinationInfo packetDI) throws IOException, EncryptionException {
+    public void sendMessage(PacketDestinationInfo packetDI)
+            throws IOException, EncryptionException, TooLongMessageException {
         buf = packetCoder.encode(packetDI.getPacket());
         DatagramPacket packetUpd =
                 new DatagramPacket(buf, buf.length, packetDI.getAddress(), packetDI.getPort());
         socket.send(packetUpd);
     }
 
-    public void sendMessageHalfTEST(PacketDestinationInfo packetDI) throws IOException, EncryptionException {
+    public void sendMessageHalfTEST(PacketDestinationInfo packetDI)
+            throws IOException, EncryptionException, TooLongMessageException {
         byte[] fullPacket = packetCoder.encode(packetDI.getPacket());
         buf = Arrays.copyOf(fullPacket, fullPacket.length / 2);
         DatagramPacket packetUpd =

@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -120,9 +119,8 @@ public class CsTcpTest {
         message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
 
-//        response = client.requestGivingHalfTEST(packet2Magic);
-//        message = response.getUsefulMessage().getMessage();
-//        Assert.assertEquals("Corrupt message was given", message);
+        client.requestGivingHalfTEST(packet2Magic);
+        client.requestGivingLargeNumbersTEST();
 
         response = client.request(packet);
         message = response.getUsefulMessage().getMessage();
