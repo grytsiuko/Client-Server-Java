@@ -1,6 +1,7 @@
 package org.fidoshenyata.Lab2.CS;
 
 import com.google.common.primitives.UnsignedLong;
+import lombok.Getter;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.Lab2.Network.NetworkTCP;
@@ -24,8 +25,16 @@ public class ClientTCP {
     private Socket socket;
     private NetworkTCP networkTCP;
     private int serverPort;
+    private Packet.PacketBuilder packetBuilder;
+
+    @Getter
+    private UnsignedLong packetCount;
 
     public ClientTCP() {
+        packetCount = UnsignedLong.valueOf(0);
+        packetBuilder = Packet
+                .builder()
+                .source((byte) 1);
     }
 
     public void connect(int serverPort) throws FailedHandShake, ServerUnavailableException {
@@ -52,16 +61,17 @@ public class ClientTCP {
         }
     }
 
-    public Packet request(Packet packet)
+    public Packet request(Message message)
             throws EncryptionException, DecryptionException, CorruptedPacketException,
             ServerUnavailableException, FailedHandShake, RequestInterruptedException, TooLongMessageException {
 
-        if (networkTCP == null) {
-            throw new IllegalStateException("Not connected yet");
-        }
+        incrementPacketCount();
 
         try {
-            networkTCP.sendMessage(packet);
+            packetBuilder
+                    .usefulMessage(message)
+                    .packetID(packetCount);
+            networkTCP.sendMessage(packetBuilder.build());
             return networkTCP.receiveMessage();
         } catch (IOException | SocketClosedException e) {
             tryToConnect();
@@ -69,10 +79,15 @@ public class ClientTCP {
         }
     }
 
-    public void requestGivingHalfTEST(Packet packet)
+    public void requestGivingHalfTEST(Message message)
             throws IOException, EncryptionException, TooLongMessageException {
 
-        networkTCP.sendMessageHalfTEST(packet);
+        incrementPacketCount();
+        packetBuilder
+                .usefulMessage(message)
+                .packetID(packetCount);
+        networkTCP.sendMessageHalfTEST(packetBuilder.build());
+
     }
 
     public void requestGivingLargeNumbersTEST()
@@ -86,18 +101,18 @@ public class ClientTCP {
         socket.close();
     }
 
+    private void incrementPacketCount() {
+        packetCount = packetCount.plus(UnsignedLong.valueOf(1));
+    }
+
     public static void main(String[] args) {
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 5)
-                .packetID(UnsignedLong.valueOf(2))
-                .usefulMessage(
-                        Message.builder()
-                                .userID(2048)
-                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
-                                .message("Hello From Client!")
-                                .build()
-                );
-        Packet packet = packetBuilder.build();
+
+        Message requestMessage = Message.builder()
+                .userID(2048)
+                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                .message("Hello From Client!")
+                .build();
+
 
         final int threads = 5;
         final int packetsInThread = 10;
@@ -113,7 +128,7 @@ public class ClientTCP {
                         try {
 
                             System.out.println("Client sent");
-                            Packet response = clientTCP.request(packet);
+                            Packet response = clientTCP.request(requestMessage);
                             String message = response.getUsefulMessage().getMessage();
                             System.out.println("Client received");
                             if (!message.equals("Ok"))

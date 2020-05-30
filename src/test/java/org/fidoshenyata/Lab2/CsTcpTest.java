@@ -1,6 +1,5 @@
 package org.fidoshenyata.Lab2;
 
-import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
 import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.Lab2.CS.ClientTCP;
@@ -16,30 +15,23 @@ import static org.junit.Assert.*;
 
 public class CsTcpTest {
 
-    private Packet packet;
-    private Packet packet2Magic;
+    private Message requestMessage;
+    private Message requestMessage2Magic;
 
     @BeforeClass
-    public static void beforeClass(){
+    public static void beforeClass() {
         (new Thread(() -> ServerTCP.main(null))).start();
     }
 
     @Before
     public void setUp() throws InterruptedException {
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 5)
-                .packetID(UnsignedLong.valueOf(2))
-                .usefulMessage(
-                        Message.builder()
-                                .userID(2048)
-                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
-                                .message("Hello From Client!")
-                                .build()
-                );
-        packet = packetBuilder.build();
+        Message.MessageBuilder messageBuilder = Message.builder()
+                .userID(2048)
+                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                .message("Hello From Client!");
 
-        packetBuilder.packetID(UnsignedLong.valueOf(0x13));
-        packet2Magic = packetBuilder.build();
+        requestMessage = messageBuilder.build();
+        requestMessage2Magic = messageBuilder.userID(0x13).build();
 
         Thread.sleep(200); // wait until sever is up
     }
@@ -54,7 +46,7 @@ public class CsTcpTest {
         clientTCP.connect(ServerTCP.PORT);
 
         for (int i = 0; i < packetsInThread; i++) {
-            Packet response = clientTCP.request(packet);
+            Packet response = clientTCP.request(requestMessage);
             String message = response.getUsefulMessage().getMessage();
             assertEquals(message, "Ok");
             succeedPackets++;
@@ -82,7 +74,7 @@ public class CsTcpTest {
                     clientTCP.connect(ServerTCP.PORT);
 
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = clientTCP.request(packet);
+                        Packet response = clientTCP.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
                         assertEquals(message, "Ok");
                         succeedPackets.incrementAndGet();
@@ -107,22 +99,38 @@ public class CsTcpTest {
     }
 
     @Test
+    public void samePacketIDTest() throws Exception {
+
+        final int packets = 50;
+
+        ClientTCP clientTCP = new ClientTCP();
+        clientTCP.connect(ServerTCP.PORT);
+
+        for (int i = 0; i < packets; i++) {
+            Packet response = clientTCP.request(requestMessage);
+            assertEquals(response.getPacketID(), clientTCP.getPacketCount());
+        }
+
+        clientTCP.disconnect();
+    }
+
+    @Test
     public void test2MagicAndHalfPacket() throws Exception {
         ClientTCP client = new ClientTCP();
         client.connect(ServerTCP.PORT);
 
-        Packet response = client.request(packet);
+        Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
 
-        response = client.request(packet2Magic);
+        response = client.request(requestMessage2Magic);
         message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
 
-        client.requestGivingHalfTEST(packet2Magic);
+        client.requestGivingHalfTEST(requestMessage2Magic);
         client.requestGivingLargeNumbersTEST();
 
-        response = client.request(packet);
+        response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
     }

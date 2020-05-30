@@ -44,7 +44,9 @@ public class ClientUDP {
             throws EncryptionException, DecryptionException, CorruptedPacketException,
             NoAnswerException, TooLongMessageException {
 
+        packetCount++;
         int resendCounter = 0;
+
         while (resendCounter < TIMES_RETRY) {
             try {
                 network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
@@ -67,10 +69,8 @@ public class ClientUDP {
     public void requestGivingHalfTEST(Packet packet)
             throws IOException, EncryptionException, TooLongMessageException {
 
+        packetCount++;
         network.sendMessageHalfTEST(new PacketDestinationInfo(packet, address, PORT));
-//        Packet res = network.receiveMessage().getPacket();
-//        packetCount++;
-//        return res;
     }
 
     public void disconnect() {
