@@ -15,8 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CsUdpTest {
 
-    private Packet packet;
-    private Packet packet2Magic;
+    private Message requestMessage;
+    private Message requestMessage2Magic;
 
     @BeforeClass
     public static void beforeClass() {
@@ -30,26 +30,23 @@ public class CsUdpTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
                 .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
                 .message("Hello From Client!");
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 5)
-                .packetID(UnsignedLong.valueOf(2))
-                .usefulMessage(messageBuilder.build());
-        packet = packetBuilder.build();
-        messageBuilder.userID(19);
-        packetBuilder.usefulMessage(messageBuilder.build());
-        packet2Magic = packetBuilder.build();
+
+        requestMessage = messageBuilder.build();
+        requestMessage2Magic = messageBuilder.userID(0x13).build();
+
+        Thread.sleep(200); // wait until sever is up
     }
 
     @Test
     public void sendOneMessage() throws Exception {
         ClientUDP client = new ClientUDP();
         client.connect();
-        Packet response = client.request(packet);
+        Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
     }
@@ -59,7 +56,7 @@ public class CsUdpTest {
         ClientUDP client = new ClientUDP();
         client.connect();
         for (int i = 0; i < 10; i++) {
-            Packet response = client.request(packet);
+            Packet response = client.request(requestMessage);
             String message = response.getUsefulMessage().getMessage();
             Assert.assertEquals("Ok", message);
         }
@@ -82,7 +79,7 @@ public class CsUdpTest {
                     ClientUDP client = new ClientUDP();
                     client.connect();
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = client.request(packet);
+                        Packet response = client.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
                         Assert.assertEquals("Ok", message);
                         succeedPackets.incrementAndGet();
@@ -106,21 +103,18 @@ public class CsUdpTest {
 
     @Test
     public void samePacketId() throws Exception {
+
+        final int packets = 50;
+
         ClientUDP client = new ClientUDP();
         client.connect();
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 19)
-                .packetID(UnsignedLong.valueOf(client.getPacketCount()))
-                .usefulMessage(
-                        Message.builder()
-                                .userID(2048)
-                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
-                                .message("Hello From Client!")
-                                .build()
-                );
-        Packet sentPacket = packetBuilder.build();
-        Packet response = client.request(sentPacket);
-        Assert.assertEquals(sentPacket.getPacketID(), response.getPacketID());
+
+        for (int i = 0; i < packets; i++) {
+            Packet response = client.request(requestMessage);
+            Assert.assertEquals(response.getPacketID(), client.getPacketCount());
+        }
+
+        client.disconnect();
     }
 
     @Test
@@ -128,19 +122,17 @@ public class CsUdpTest {
         ClientUDP client = new ClientUDP();
         client.connect();
 
-        Packet response = client.request(packet);
+        Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
 
-        response = client.request(packet2Magic);
+        response = client.request(requestMessage2Magic);
         message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
 
-        client.requestGivingHalfTEST(packet2Magic);
-//        message = response.getUsefulMessage().getMessage();
-//        Assert.assertEquals("Corrupt message was given", message);
+        client.requestGivingHalfTEST(requestMessage2Magic);
 
-        response = client.request(packet);
+        response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();
         Assert.assertEquals("Ok", message);
     }

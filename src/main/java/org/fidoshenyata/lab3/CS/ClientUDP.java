@@ -21,9 +21,10 @@ public class ClientUDP {
     private DatagramSocket socket;
     private InetAddress address;
     private NetworkUDP network;
+    private Packet.PacketBuilder packetBuilder;
 
     @Getter
-    private int packetCount;
+    private UnsignedLong packetCount;
 
     private static final int PORT = 4445;
     private static final int RESEND_TIMEOUT = 500;
@@ -31,6 +32,10 @@ public class ClientUDP {
     private static final int TIMES_RETRY = 3;
 
     public ClientUDP() {
+        packetCount = UnsignedLong.valueOf(0);
+        packetBuilder = Packet
+                .builder()
+                .source((byte) 1);
     }
 
     public void connect() throws KeyInitializationException, SocketException, UnknownHostException {
@@ -40,16 +45,19 @@ public class ClientUDP {
         network = new NetworkUDP(socket);
     }
 
-    public Packet request(Packet packet)
+    public Packet request(Message message)
             throws EncryptionException, DecryptionException, CorruptedPacketException,
             NoAnswerException, TooLongMessageException {
 
-        packetCount++;
+        incrementPacketCount();
         int resendCounter = 0;
 
         while (resendCounter < TIMES_RETRY) {
             try {
-                network.sendMessage(new PacketDestinationInfo(packet, address, PORT));
+                packetBuilder
+                        .usefulMessage(message)
+                        .packetID(packetCount);
+                network.sendMessage(new PacketDestinationInfo(packetBuilder.build(), address, PORT));
                 return network.receiveMessage().getPacket();
             } catch (IOException e) {
                 resendCounter++;
@@ -66,20 +74,34 @@ public class ClientUDP {
         throw new NoAnswerException();
     }
 
-    public void requestGivingHalfTEST(Packet packet)
+    public void requestGivingHalfTEST(Message message)
             throws IOException, EncryptionException, TooLongMessageException {
 
-        packetCount++;
-        network.sendMessageHalfTEST(new PacketDestinationInfo(packet, address, PORT));
+        incrementPacketCount();
+        packetBuilder
+                .usefulMessage(message)
+                .packetID(packetCount);
+        network.sendMessageHalfTEST(new PacketDestinationInfo(packetBuilder.build(), address, PORT));
     }
 
     public void disconnect() {
         socket.close();
     }
 
+    private void incrementPacketCount() {
+        packetCount = packetCount.plus(UnsignedLong.valueOf(1));
+    }
+
     public static void main(String[] args) {
         final int threads = 10;
         final int packetsInThread = 10;
+
+        Message requestMessage = Message.builder()
+                .userID(2048)
+                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                .message("Hello From Client!")
+                .build();
+
         for (int k = 0; k < threads; k++) {
             new Thread(() -> {
                 try {
@@ -87,19 +109,7 @@ public class ClientUDP {
                     client.connect();
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet.PacketBuilder packetBuilder = Packet.builder()
-                                .source((byte) 19)
-                                .packetID(UnsignedLong.valueOf(client.getPacketCount()))
-                                .usefulMessage(
-                                        Message.builder()
-                                                .userID(2048)
-                                                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
-                                                .message("Hello From Client!")
-                                                .build()
-                                );
-
-                        Packet packet = packetBuilder.build();
-                        Packet response = client.request(packet);
+                        Packet response = client.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
 
                         if (!message.equals("Ok")) System.out.println("Wrong response: " + message);

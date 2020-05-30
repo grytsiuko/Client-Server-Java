@@ -1,8 +1,6 @@
 package org.fidoshenyata.Lab3;
 
-import com.google.common.primitives.UnsignedLong;
 import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.exceptions.communication.NoAnswerException;
 import org.fidoshenyata.lab3.CS.ClientUDP;
 import org.junit.Assert;
@@ -12,7 +10,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CSUdpTestServerDown {
-    private Packet packet;
+    private Message requestMessage;
 
     @Before
     public void setUp() {
@@ -20,18 +18,15 @@ public class CSUdpTestServerDown {
                 .userID(2048)
                 .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
                 .message("Hello From Client!");
-        Packet.PacketBuilder packetBuilder = Packet.builder()
-                .source((byte) 5)
-                .packetID(UnsignedLong.valueOf(2))
-                .usefulMessage(messageBuilder.build());
-        packet = packetBuilder.build();
+
+        requestMessage = messageBuilder.build();
     }
 
     @Test(expected = NoAnswerException.class)
     public void testOneMessage() throws Exception {
         ClientUDP client = new ClientUDP();
         client.connect();
-        client.request(packet);
+        client.request(requestMessage);
     }
 
     @Test(expected = NoAnswerException.class)
@@ -40,7 +35,7 @@ public class CSUdpTestServerDown {
         client.connect();
 
         for (int i = 0; i < 10; i++) {
-            client.request(packet);
+            client.request(requestMessage);
         }
     }
 
@@ -61,7 +56,7 @@ public class CSUdpTestServerDown {
                     client.connect();
                     for (int i = 0; i < packetsInThread; i++) {
                         try {
-                            client.request(packet);
+                            client.request(requestMessage);
                         } catch (NoAnswerException e) {
                             Assert.assertEquals(NoAnswerException.class, e.getClass());
                             succeedExceptions.incrementAndGet();
