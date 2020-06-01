@@ -1,35 +1,32 @@
-package org.fidoshenyata.Lab3;
+package org.fidoshenyata;
 
+import org.fidoshenyata.client.ClientCS;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
-import org.fidoshenyata.client.ClientUDP;
-import org.fidoshenyata.server.ServerUDP;
+import org.fidoshenyata.client.ClientTCP;
+import org.fidoshenyata.processor.ProcessorEnum;
+import org.fidoshenyata.server.ServerTCP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CsUdpTest {
+import static org.junit.Assert.*;
+
+public class CsTcpTest {
 
     private Message requestMessage;
     private Message requestMessage2Magic;
 
     @BeforeClass
     public static void beforeClass() {
-        (new Thread(() -> {
-            try {
-                ServerUDP.main(new String[]{"OK"});
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        })).start();
+        new Thread(new ServerTCP(ProcessorEnum.OK)).start();
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws InterruptedException {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
                 .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
@@ -42,31 +39,31 @@ public class CsUdpTest {
     }
 
     @Test
-    public void sendOneMessage() throws Exception {
-        ClientUDP client = new ClientUDP();
-        client.connect();
-        Packet response = client.request(requestMessage);
-        String message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
-    }
+    public void TestOneThread() throws Exception {
 
-    @Test
-    public void sendMultipleMessages() throws Exception {
-        ClientUDP client = new ClientUDP();
-        client.connect();
-        for (int i = 0; i < 10; i++) {
-            Packet response = client.request(requestMessage);
+        final int packetsInThread = 50;
+        long succeedPackets = 0;
+
+        ClientCS clientTCP = new ClientTCP();
+        clientTCP.connect();
+
+        for (int i = 0; i < packetsInThread; i++) {
+            Packet response = clientTCP.request(requestMessage);
             String message = response.getUsefulMessage().getMessage();
-            Assert.assertEquals("Ok", message);
+            assertEquals(message, "Ok");
+            succeedPackets++;
         }
+
+        clientTCP.disconnect();
+
+        Assert.assertEquals(packetsInThread, succeedPackets);
     }
 
     @Test
-    public void sendMultipleMessagesConcurrently() throws Exception {
+    public void TestMoreThreadsThanServer() throws InterruptedException {
 
-
-        final int threads = 10;
-        final int packetsInThread = 5;
+        final int threads = ServerTCP.THREADS * 2;
+        final int packetsInThread = 50;
 
         AtomicInteger succeedPackets = new AtomicInteger(0);
         long expectedSucceedPackets = threads * packetsInThread;
@@ -75,14 +72,17 @@ public class CsUdpTest {
         for (int k = 0; k < threads; k++) {
             threadsArray[k] = new Thread(() -> {
                 try {
-                    ClientUDP client = new ClientUDP();
-                    client.connect();
+                    ClientCS clientTCP = new ClientTCP();
+                    clientTCP.connect();
+
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = client.request(requestMessage);
+                        Packet response = clientTCP.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
-                        Assert.assertEquals("Ok", message);
+                        assertEquals(message, "Ok");
                         succeedPackets.incrementAndGet();
                     }
+
+                    clientTCP.disconnect();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -101,24 +101,24 @@ public class CsUdpTest {
     }
 
     @Test
-    public void samePacketId() throws Exception {
+    public void samePacketIDTest() throws Exception {
 
         final int packets = 50;
 
-        ClientUDP client = new ClientUDP();
-        client.connect();
+        ClientCS clientTCP = new ClientTCP();
+        clientTCP.connect();
 
         for (int i = 0; i < packets; i++) {
-            Packet response = client.request(requestMessage);
-            Assert.assertEquals(response.getPacketID(), client.getPacketCount());
+            Packet response = clientTCP.request(requestMessage);
+            assertEquals(response.getPacketID(), clientTCP.getPacketCount());
         }
 
-        client.disconnect();
+        clientTCP.disconnect();
     }
 
     @Test
     public void test2MagicAndHalfPacket() throws Exception {
-        ClientUDP client = new ClientUDP();
+        ClientTCP client = new ClientTCP();
         client.connect();
 
         Packet response = client.request(requestMessage);
@@ -130,6 +130,7 @@ public class CsUdpTest {
         Assert.assertEquals("Ok", message);
 
         client.requestGivingHalfTEST(requestMessage2Magic);
+        client.requestGivingLargeNumbersTEST();
 
         response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();

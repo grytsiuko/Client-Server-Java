@@ -9,4 +9,11 @@ public class ProcessorFactory{
                 return new ProcessorOkImpl();
         }
     }
+
+    public static ProcessorEnum processorType(String choice) {
+        switch (choice.toUpperCase()) {
+            default:
+                return ProcessorEnum.OK;
+        }
+    }
 }

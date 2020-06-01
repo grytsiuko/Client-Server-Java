@@ -1,6 +1,7 @@
 package org.fidoshenyata.server;
 
 import org.fidoshenyata.processor.ProcessorEnum;
+import org.fidoshenyata.processor.ProcessorFactory;
 import org.fidoshenyata.server.connection.ServerConnectionTCP;
 
 import java.io.IOException;
@@ -8,20 +9,26 @@ import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ServerTCP {
+public class ServerTCP implements ServerCS {
 
     public static final int THREADS = 5;
     public static final int PROCESSOR_THREADS = 2;
     public static final int PORT = 59898;
 
-    private static ProcessorEnum processorType = ProcessorEnum.OK;
+    private ProcessorEnum processorType;
+
+    public ServerTCP(ProcessorEnum processorType){
+        this.processorType = processorType;
+    }
 
     public static void main(String[] args)  {
-        if (args.length == 1) {
-            setProcessorType(args[0]);
-        }
+        ProcessorEnum processorEnum = args.length == 1 ? ProcessorFactory.processorType(args[0]): ProcessorEnum.OK;
+        new Thread(new ServerTCP(processorEnum)).start();
+    }
 
 
+    @Override
+    public void run() {
         try (ServerSocket listener = new ServerSocket(PORT)) {
             System.out.println("Server is running on port " + PORT);
             ExecutorService poolConnections = Executors.newFixedThreadPool(THREADS);
@@ -30,16 +37,7 @@ public class ServerTCP {
                 poolConnections.execute(new ServerConnectionTCP(listener.accept(), poolProcessors,  processorType));
             }
         } catch(IOException e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }
-
-    private static void setProcessorType(String choice) {
-        switch (choice.toUpperCase()) {
-            default:
-                processorType = ProcessorEnum.OK;
-        }
-    }
-
-
 }

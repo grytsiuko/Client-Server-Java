@@ -16,7 +16,7 @@ import org.fidoshenyata.network.utils.PacketDestinationInfo;
 import java.io.IOException;
 import java.net.*;
 
-public class ClientUDP {
+public class ClientUDP implements ClientCS {
 
     private DatagramSocket socket;
     private InetAddress address;
@@ -38,6 +38,7 @@ public class ClientUDP {
                 .source((byte) 1);
     }
 
+    @Override
     public void connect() throws KeyInitializationException, SocketException, UnknownHostException {
         socket = new DatagramSocket();
         socket.setSoTimeout(RESEND_TIMEOUT);
@@ -45,6 +46,7 @@ public class ClientUDP {
         network = new NetworkUDP(socket);
     }
 
+    @Override
     public Packet request(Message message)
             throws EncryptionException, DecryptionException, CorruptedPacketException,
             NoAnswerException, TooLongMessageException {
@@ -74,6 +76,7 @@ public class ClientUDP {
         throw new NoAnswerException();
     }
 
+    @Override
     public void requestGivingHalfTEST(Message message)
             throws IOException, EncryptionException, TooLongMessageException {
 
@@ -84,6 +87,7 @@ public class ClientUDP {
         network.sendMessageHalfTEST(new PacketDestinationInfo(packetBuilder.build(), address, PORT));
     }
 
+    @Override
     public void disconnect() {
         socket.close();
     }

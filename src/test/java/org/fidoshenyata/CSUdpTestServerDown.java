@@ -1,5 +1,6 @@
-package org.fidoshenyata.Lab3;
+package org.fidoshenyata;
 
+import org.fidoshenyata.client.ClientCS;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.exceptions.communication.NoAnswerException;
 import org.fidoshenyata.client.ClientUDP;
@@ -24,14 +25,14 @@ public class CSUdpTestServerDown {
 
     @Test(expected = NoAnswerException.class)
     public void testOneMessage() throws Exception {
-        ClientUDP client = new ClientUDP();
+        ClientCS client = new ClientUDP();
         client.connect();
         client.request(requestMessage);
     }
 
     @Test(expected = NoAnswerException.class)
     public void sendMultipleMessages() throws Exception {
-        ClientUDP client = new ClientUDP();
+        ClientCS client = new ClientUDP();
         client.connect();
 
         for (int i = 0; i < 10; i++) {
@@ -52,7 +53,7 @@ public class CSUdpTestServerDown {
         for (int k = 0; k < threads; k++) {
             threadsArray[k] = new Thread(() -> {
                 try {
-                    ClientUDP client = new ClientUDP();
+                    ClientCS client = new ClientUDP();
                     client.connect();
                     for (int i = 0; i < packetsInThread; i++) {
                         try {

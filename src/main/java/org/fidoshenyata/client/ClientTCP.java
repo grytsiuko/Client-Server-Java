@@ -18,7 +18,7 @@ import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ClientTCP {
+public class ClientTCP implements ClientCS{
 
     private final static int RECONNECTION_TRIES = 5;
     private final static int RECONNECTION_DELAY = 3000;
@@ -38,8 +38,8 @@ public class ClientTCP {
                 .source((byte) 1);
     }
 
-    public void connect(int serverPort) throws FailedHandShake, ServerUnavailableException {
-        this.serverPort = serverPort;
+    public void connect() throws FailedHandShake, ServerUnavailableException {
+        this.serverPort = ServerTCP.PORT;
         tryToConnect();
     }
 
@@ -122,7 +122,7 @@ public class ClientTCP {
             new Thread(() -> {
                 try {
                     ClientTCP clientTCP = new ClientTCP();
-                    clientTCP.connect(ServerTCP.PORT);
+                    clientTCP.connect();
 
                     int succeed = 0;
                     for (int i = 0; i < packetsInThread; i++) {

@@ -1,30 +1,31 @@
-package org.fidoshenyata.Lab2;
+package org.fidoshenyata;
 
+import org.fidoshenyata.client.ClientCS;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
-import org.fidoshenyata.client.ClientTCP;
-import org.fidoshenyata.server.ServerTCP;
+import org.fidoshenyata.client.ClientUDP;
+import org.fidoshenyata.processor.ProcessorEnum;
+import org.fidoshenyata.server.ServerUDP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
-
-public class CsTcpTest {
+public class CsUdpTest {
 
     private Message requestMessage;
     private Message requestMessage2Magic;
 
     @BeforeClass
     public static void beforeClass() {
-        new Thread(() -> ServerTCP.main(new String[]{"OK"})).start();
+        new Thread(new ServerUDP(ProcessorEnum.OK)).start();
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() throws Exception {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
                 .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
@@ -37,31 +38,31 @@ public class CsTcpTest {
     }
 
     @Test
-    public void TestOneThread() throws Exception {
-
-        final int packetsInThread = 50;
-        long succeedPackets = 0;
-
-        ClientTCP clientTCP = new ClientTCP();
-        clientTCP.connect(ServerTCP.PORT);
-
-        for (int i = 0; i < packetsInThread; i++) {
-            Packet response = clientTCP.request(requestMessage);
-            String message = response.getUsefulMessage().getMessage();
-            assertEquals(message, "Ok");
-            succeedPackets++;
-        }
-
-        clientTCP.disconnect();
-
-        Assert.assertEquals(packetsInThread, succeedPackets);
+    public void sendOneMessage() throws Exception {
+        ClientCS client = new ClientUDP();
+        client.connect();
+        Packet response = client.request(requestMessage);
+        String message = response.getUsefulMessage().getMessage();
+        Assert.assertEquals("Ok", message);
     }
 
     @Test
-    public void TestMoreThreadsThanServer() throws InterruptedException {
+    public void sendMultipleMessages() throws Exception {
+        ClientCS client = new ClientUDP();
+        client.connect();
+        for (int i = 0; i < 10; i++) {
+            Packet response = client.request(requestMessage);
+            String message = response.getUsefulMessage().getMessage();
+            Assert.assertEquals("Ok", message);
+        }
+    }
 
-        final int threads = ServerTCP.THREADS * 2;
-        final int packetsInThread = 50;
+    @Test
+    public void sendMultipleMessagesConcurrently() throws Exception {
+
+
+        final int threads = 10;
+        final int packetsInThread = 5;
 
         AtomicInteger succeedPackets = new AtomicInteger(0);
         long expectedSucceedPackets = threads * packetsInThread;
@@ -70,17 +71,14 @@ public class CsTcpTest {
         for (int k = 0; k < threads; k++) {
             threadsArray[k] = new Thread(() -> {
                 try {
-                    ClientTCP clientTCP = new ClientTCP();
-                    clientTCP.connect(ServerTCP.PORT);
-
+                    ClientCS client = new ClientUDP();
+                    client.connect();
                     for (int i = 0; i < packetsInThread; i++) {
-                        Packet response = clientTCP.request(requestMessage);
+                        Packet response = client.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
-                        assertEquals(message, "Ok");
+                        Assert.assertEquals("Ok", message);
                         succeedPackets.incrementAndGet();
                     }
-
-                    clientTCP.disconnect();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -99,25 +97,25 @@ public class CsTcpTest {
     }
 
     @Test
-    public void samePacketIDTest() throws Exception {
+    public void samePacketId() throws Exception {
 
         final int packets = 50;
 
-        ClientTCP clientTCP = new ClientTCP();
-        clientTCP.connect(ServerTCP.PORT);
+        ClientCS client = new ClientUDP();
+        client.connect();
 
         for (int i = 0; i < packets; i++) {
-            Packet response = clientTCP.request(requestMessage);
-            assertEquals(response.getPacketID(), clientTCP.getPacketCount());
+            Packet response = client.request(requestMessage);
+            Assert.assertEquals(response.getPacketID(), client.getPacketCount());
         }
 
-        clientTCP.disconnect();
+        client.disconnect();
     }
 
     @Test
     public void test2MagicAndHalfPacket() throws Exception {
-        ClientTCP client = new ClientTCP();
-        client.connect(ServerTCP.PORT);
+        ClientCS client = new ClientUDP();
+        client.connect();
 
         Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
@@ -128,7 +126,6 @@ public class CsTcpTest {
         Assert.assertEquals("Ok", message);
 
         client.requestGivingHalfTEST(requestMessage2Magic);
-        client.requestGivingLargeNumbersTEST();
 
         response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();

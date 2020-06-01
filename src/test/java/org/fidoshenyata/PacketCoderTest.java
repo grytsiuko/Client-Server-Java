@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab1;
+package org.fidoshenyata;
 
 import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
