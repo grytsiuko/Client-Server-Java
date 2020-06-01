@@ -1,8 +1,9 @@
-package org.fidoshenyata.Lab2.Network;
+package org.fidoshenyata.network;
 
-import org.fidoshenyata.Lab1.PacketCoder;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.network.utils.Keys;
+import org.fidoshenyata.packet.PacketCoder;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;

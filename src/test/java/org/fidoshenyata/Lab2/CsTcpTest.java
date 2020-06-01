@@ -1,9 +1,9 @@
 package org.fidoshenyata.Lab2;
 
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.Lab2.CS.ClientTCP;
-import org.fidoshenyata.Lab2.CS.ServerTCP;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
+import org.fidoshenyata.client.ClientTCP;
+import org.fidoshenyata.server.ServerTCP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -20,7 +20,7 @@ public class CsTcpTest {
 
     @BeforeClass
     public static void beforeClass() {
-        (new Thread(() -> ServerTCP.main(null))).start();
+        new Thread(() -> ServerTCP.main(new String[]{"OK"})).start();
     }
 
     @Before

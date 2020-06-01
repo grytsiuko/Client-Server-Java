@@ -1,8 +1,8 @@
-package org.fidoshenyata.Lab2.Processor;
+package org.fidoshenyata.processor;
 
 import com.google.common.primitives.UnsignedLong;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
 
 public class ProcessorOkImpl implements Processor {
 

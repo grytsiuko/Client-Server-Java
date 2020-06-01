@@ -1,9 +1,7 @@
-package org.fidoshenyata.Lab1;
+package org.fidoshenyata.packet;
 
 import com.github.snksoft.crc.CRC;
 import com.google.common.primitives.UnsignedLong;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.TooLongMessageException;

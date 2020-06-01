@@ -1,7 +1,8 @@
-package org.fidoshenyata.lab3.network;
+package org.fidoshenyata.network;
 
-import org.fidoshenyata.Lab1.PacketCoder;
-import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.network.utils.PacketDestinationInfo;
+import org.fidoshenyata.packet.PacketCoder;
+import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;

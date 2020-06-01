@@ -1,17 +1,17 @@
-package org.fidoshenyata.lab3.CS;
+package org.fidoshenyata.client;
 
 import com.google.common.primitives.UnsignedLong;
 import lombok.Getter;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.exceptions.communication.NoAnswerException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
 import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
-import org.fidoshenyata.lab3.network.NetworkUDP;
-import org.fidoshenyata.lab3.network.PacketDestinationInfo;
+import org.fidoshenyata.network.NetworkUDP;
+import org.fidoshenyata.network.utils.PacketDestinationInfo;
 
 import java.io.IOException;
 import java.net.*;

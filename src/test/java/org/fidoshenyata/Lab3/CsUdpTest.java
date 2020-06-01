@@ -1,10 +1,9 @@
 package org.fidoshenyata.Lab3;
 
-import com.google.common.primitives.UnsignedLong;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.lab3.CS.ClientUDP;
-import org.fidoshenyata.lab3.CS.ServerUDP;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
+import org.fidoshenyata.client.ClientUDP;
+import org.fidoshenyata.server.ServerUDP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

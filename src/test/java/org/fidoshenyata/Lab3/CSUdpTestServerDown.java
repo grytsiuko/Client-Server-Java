@@ -1,8 +1,8 @@
 package org.fidoshenyata.Lab3;
 
-import org.fidoshenyata.Lab1.model.Message;
+import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.exceptions.communication.NoAnswerException;
-import org.fidoshenyata.lab3.CS.ClientUDP;
+import org.fidoshenyata.client.ClientUDP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

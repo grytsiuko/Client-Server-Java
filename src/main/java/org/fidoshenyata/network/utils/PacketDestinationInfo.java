@@ -1,7 +1,7 @@
-package org.fidoshenyata.lab3.network;
+package org.fidoshenyata.network.utils;
 
 import lombok.*;
-import org.fidoshenyata.Lab1.model.Packet;
+import org.fidoshenyata.packet.Packet;
 
 import java.net.InetAddress;
 

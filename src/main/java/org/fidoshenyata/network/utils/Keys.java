@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab2.Network;
+package org.fidoshenyata.network.utils;
 
 import lombok.Getter;
 
@@ -11,7 +11,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-class Keys {
+public class Keys {
 
     @Getter
     private PublicKey publicKey;
@@ -19,7 +19,7 @@ class Keys {
     private KeyAgreement keyAgreement;
     private byte[] sharedSecret;
 
-    Keys(){
+    public Keys(){
         KeyPairGenerator kpg;
         try {
             kpg = KeyPairGenerator.getInstance("EC");
@@ -35,10 +35,8 @@ class Keys {
         }
     }
 
-    Key doHandShake(InputStream inputStream, OutputStream outputStream) throws IOException {
-        Keys keys = new Keys();
-
-        PublicKey publicKey = keys.getPublicKey();
+    public Key doHandShake(InputStream inputStream, OutputStream outputStream) throws IOException {
+        PublicKey publicKey = getPublicKey();
         byte[] publicKeyEncoded = publicKey.getEncoded();
 
         outputStream.write(publicKeyEncoded.length);
@@ -52,8 +50,8 @@ class Keys {
 
         try {
             PublicKey serverPublicKey = KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(inputKey));
-            keys.setReceiverPublicKey(serverPublicKey);
-            return keys.generateKey();
+            setReceiverPublicKey(serverPublicKey);
+            return generateKey();
         } catch (InvalidKeySpecException | NoSuchAlgorithmException | InvalidKeyException e) {
             return null;
         }

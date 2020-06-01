@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab2.Processor;
+package org.fidoshenyata.processor;
 
 
 public class ProcessorFactory{

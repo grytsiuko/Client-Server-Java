@@ -1,4 +1,4 @@
-package org.fidoshenyata.Lab1.model;
+package org.fidoshenyata.packet;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

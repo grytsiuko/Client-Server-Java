@@ -1,12 +1,12 @@
-package org.fidoshenyata.lab3.CS;
+package org.fidoshenyata.server;
 
-import org.fidoshenyata.Lab2.Processor.ProcessorEnum;
+import org.fidoshenyata.processor.ProcessorEnum;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
-import org.fidoshenyata.lab3.network.NetworkUDP;
-import org.fidoshenyata.lab3.network.PacketDestinationInfo;
-import org.fidoshenyata.lab3.network.ServerConnectionUDP;
+import org.fidoshenyata.network.NetworkUDP;
+import org.fidoshenyata.network.utils.PacketDestinationInfo;
+import org.fidoshenyata.server.connection.ServerConnectionUDP;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

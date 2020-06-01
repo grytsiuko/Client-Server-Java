@@ -1,11 +1,13 @@
-package org.fidoshenyata.lab3.network;
+package org.fidoshenyata.server.connection;
 
-import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.Lab2.Processor.Processor;
-import org.fidoshenyata.Lab2.Processor.ProcessorEnum;
-import org.fidoshenyata.Lab2.Processor.ProcessorFactory;
+import org.fidoshenyata.packet.Packet;
+import org.fidoshenyata.processor.Processor;
+import org.fidoshenyata.processor.ProcessorEnum;
+import org.fidoshenyata.processor.ProcessorFactory;
 import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
+import org.fidoshenyata.network.NetworkUDP;
+import org.fidoshenyata.network.utils.PacketDestinationInfo;
 
 import java.io.IOException;
 

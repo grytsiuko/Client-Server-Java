@@ -1,10 +1,11 @@
-package org.fidoshenyata.Lab2.CS;
+package org.fidoshenyata.client;
 
 import com.google.common.primitives.UnsignedLong;
 import lombok.Getter;
-import org.fidoshenyata.Lab1.model.Message;
-import org.fidoshenyata.Lab1.model.Packet;
-import org.fidoshenyata.Lab2.Network.NetworkTCP;
+import org.fidoshenyata.packet.Message;
+import org.fidoshenyata.packet.Packet;
+import org.fidoshenyata.server.ServerTCP;
+import org.fidoshenyata.network.NetworkTCP;
 import org.fidoshenyata.exceptions.communication.RequestInterruptedException;
 import org.fidoshenyata.exceptions.communication.ServerUnavailableException;
 import org.fidoshenyata.exceptions.communication.SocketClosedException;
