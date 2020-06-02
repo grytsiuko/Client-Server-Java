@@ -5,6 +5,7 @@ import org.fidoshenyata.db.ConnectionFactory;
 import org.fidoshenyata.db.DAO.Dao;
 import org.fidoshenyata.db.constants.SqlStrings;
 import org.fidoshenyata.db.model.Category;
+import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
 import org.postgresql.util.PSQLException;
 
@@ -36,14 +37,37 @@ public class CategoryDao implements Dao<Category> {
     }
 
     @Override
-    public List<Category> getEntities(Integer offset, Integer limit) {
+    public Category getEntityByName(String name) {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = connection.prepareStatement(SqlStrings.GET_CATEGORY_BY_NAME);
+            ps.setString(1, name);
+            rs = ps.executeQuery();
+            if(rs.next())
+            {
+                return extractCategoryFromResultSet(rs);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(ps);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Category> getEntities(PagingInfo pagingInfo) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try{
            ps = connection.prepareStatement(SqlStrings.GET_CATEGORIES_W_PAGING);
-           ps.setInt(1, offset);
-           ps.setInt(2, limit);
+           ps.setInt(1, pagingInfo.getOffset());
+           ps.setInt(2, pagingInfo.getLimit());
            rs = ps.executeQuery();
            List<Category> list = new ArrayList<>();
            while(rs.next()){
@@ -153,10 +177,11 @@ public class CategoryDao implements Dao<Category> {
     public static void main(String[] args) throws NameAlreadyTakenException {
         CategoryDao c = new CategoryDao();
 //        System.out.println(c.getEntity(1));
-//        System.out.println(c.getEntities(0,3));
+//        System.out.println(c.getEntityByName("Food"));
+//        System.out.println(c.getEntities(new PagingInfo(1,3)));
 //        System.out.println(c.getCount());
 //        System.out.println(c.insertEntity(new Category(0,"Food", null)));
 //        System.out.println(c.updateEntity(new Category(1,"Food", "to eat")));
-        System.out.println(c.deleteEntity(2));
+//        System.out.println(c.deleteEntity(2));
     }
 }
