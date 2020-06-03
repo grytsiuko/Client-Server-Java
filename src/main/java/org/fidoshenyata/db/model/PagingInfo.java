@@ -22,6 +22,7 @@ public class PagingInfo {
     }
 
     public PagingInfo(Integer offset, Integer limit,Integer total){
+       if(offset == null || limit == null) throw new NullPointerException("Either offset or limit is null");
         this.offset = offset;
         this.limit = limit;
         this.total = total;

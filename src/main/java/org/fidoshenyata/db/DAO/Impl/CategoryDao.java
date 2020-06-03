@@ -185,7 +185,7 @@ public class CategoryDao implements Dao<Category> {
     public static void main(String[] args) throws NameAlreadyTakenException {
         CategoryDao c = new CategoryDao();
 //        System.out.println(c.getEntity(1));
-        System.out.println(c.getEntityByName("o"));
+//        System.out.println(c.getEntityByName("o"));
 //        System.out.println(c.getEntities(new PagingInfo(1,3)));
 //        System.out.println(c.getCount());
 //        System.out.println(c.insertEntity(new Category(0,"Food", null)));

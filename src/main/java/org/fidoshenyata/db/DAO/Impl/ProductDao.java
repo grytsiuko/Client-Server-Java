@@ -16,6 +16,54 @@ import java.util.List;
 
 public class ProductDao implements IProductDao {
     @Override
+    public Product getEntity(Integer id) {
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt
+                    .executeQuery( fillScript(SqlStrings.GET_ENTITY_BY_ID)+ id);
+            if(rs.next())
+            {
+                return extractProductFromResultSet(rs);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Product> getEntities(PagingInfo pagingInfo) {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try{
+            ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITIES_W_PAGING));
+            ps.setInt(1, pagingInfo.getOffset());
+            ps.setInt(2, pagingInfo.getLimit());
+            rs = ps.executeQuery();
+            List<Product> list = new ArrayList<>();
+            while(rs.next()){
+                list.add(extractProductFromResultSet(rs));
+            }
+            return list;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(ps);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
     public List<Product> getEntities(Integer categoryId, PagingInfo pagingInfo) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
@@ -42,6 +90,27 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
+    public Integer getCount() {
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try{
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
+            if(rs.next()){
+                return rs.getInt("count");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
     public Integer getCount(Integer categoryId) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
@@ -53,6 +122,29 @@ public class ProductDao implements IProductDao {
             if(rs.next())
             {
                 return rs.getInt("count");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(ps);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
+    public Product getEntityByName(String name) {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
+            ps.setString(1, "%" +name+ "%");
+            rs = ps.executeQuery();
+            if(rs.next())
+            {
+                return extractProductFromResultSet(rs);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -90,24 +182,24 @@ public class ProductDao implements IProductDao {
 
     @Override
     public BigDecimal getCost() {
-    Connection connection = ConnectionFactory.getConnection();
-    Statement stmt = null;
-    ResultSet rs = null;
-        try {
-        stmt = connection.createStatement();
-        rs = stmt
-                .executeQuery(SqlStrings.GET_COST);
-        if(rs.next())
-        {
-            return rs.getBigDecimal("cost");
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+            try {
+            stmt = connection.createStatement();
+            rs = stmt
+                    .executeQuery(SqlStrings.GET_COST);
+            if(rs.next())
+            {
+                return rs.getBigDecimal("cost");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
         }
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-    } finally {
-        DbUtils.closeQuietly(rs);
-        DbUtils.closeQuietly(stmt);
-        DbUtils.closeQuietly(connection);
-    }
         return null;
     }
 
@@ -129,98 +221,6 @@ public class ProductDao implements IProductDao {
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
-            DbUtils.closeQuietly(connection);
-        }
-        return null;
-    }
-
-    @Override
-    public Product getEntity(Integer id) {
-        Connection connection = ConnectionFactory.getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt
-                    .executeQuery( fillScript(SqlStrings.GET_ENTITY_BY_ID)+ id);
-            if(rs.next())
-            {
-                return extractProductFromResultSet(rs);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(connection);
-        }
-        return null;
-    }
-
-    @Override
-    public Product getEntityByName(String name) {
-        Connection connection = ConnectionFactory.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
-            ps.setString(1, "%" +name+ "%");
-            rs = ps.executeQuery();
-            if(rs.next())
-            {
-                return extractProductFromResultSet(rs);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(ps);
-            DbUtils.closeQuietly(connection);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Product> getEntities(PagingInfo pagingInfo) {
-    Connection connection = ConnectionFactory.getConnection();
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-        try{
-        ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITIES_W_PAGING));
-        ps.setInt(1, pagingInfo.getOffset());
-        ps.setInt(2, pagingInfo.getLimit());
-        rs = ps.executeQuery();
-        List<Product> list = new ArrayList<>();
-        while(rs.next()){
-            list.add(extractProductFromResultSet(rs));
-        }
-        return list;
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-    } finally {
-        DbUtils.closeQuietly(rs);
-        DbUtils.closeQuietly(ps);
-        DbUtils.closeQuietly(connection);
-    }
-        return null;
-    }
-
-    @Override
-    public Integer getCount() {
-        Connection connection = ConnectionFactory.getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-            if(rs.next()){
-                return rs.getInt("count");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
         return null;
@@ -315,8 +315,8 @@ public class ProductDao implements IProductDao {
 
     public static void main(String[] args) throws NameAlreadyTakenException {
         ProductDao p = new ProductDao();
-//        System.out.println(p.getEntities(2,new PagingInfo(0,3)));
-//        System.out.println(p.getEntities(new PagingInfo(0,3)));
+//        System.out.println(p.getProducts(2,new PagingInfo(0,3)));
+//        System.out.println(p.getProducts(new PagingInfo(0,3)));
 //        System.out.println(p.getCount(4));
 //        System.out.println(p.getCount());
 //        System.out.println(p.getEntityByName(1,"re"));
