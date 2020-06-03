@@ -1,7 +1,6 @@
 package org.fidoshenyata.db.DAO;
 
 import org.fidoshenyata.db.model.PagingInfo;
-import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
 
 import java.util.List;

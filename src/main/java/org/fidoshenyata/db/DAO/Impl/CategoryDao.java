@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryDao implements Dao<Category> {
+
     @Override
     public Category getEntity(Integer id) {
         Connection connection = ConnectionFactory.getConnection();
@@ -21,7 +22,8 @@ public class CategoryDao implements Dao<Category> {
         ResultSet rs = null;
         try {
             stmt = connection.createStatement();
-            rs = stmt.executeQuery(SqlStrings.GET_CATEGORY_BY_ID + id);
+            rs = stmt
+                    .executeQuery( fillScript(SqlStrings.GET_ENTITY_BY_ID)+ id);
             if(rs.next())
             {
                 return extractCategoryFromResultSet(rs);
@@ -42,8 +44,8 @@ public class CategoryDao implements Dao<Category> {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            ps = connection.prepareStatement(SqlStrings.GET_CATEGORY_BY_NAME);
-            ps.setString(1, name);
+            ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
+            ps.setString(1, "%" +name+ "%");
             rs = ps.executeQuery();
             if(rs.next())
             {
@@ -65,7 +67,7 @@ public class CategoryDao implements Dao<Category> {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try{
-           ps = connection.prepareStatement(SqlStrings.GET_CATEGORIES_W_PAGING);
+           ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITIES_W_PAGING));
            ps.setInt(1, pagingInfo.getOffset());
            ps.setInt(2, pagingInfo.getLimit());
            rs = ps.executeQuery();
@@ -91,7 +93,7 @@ public class CategoryDao implements Dao<Category> {
         ResultSet rs = null;
         try{
             stmt = connection.createStatement();
-            rs = stmt.executeQuery(SqlStrings.GET_CATEGORY_COUNT);
+            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
             if(rs.next()){
                 return rs.getInt("count");
             }
@@ -156,7 +158,7 @@ public class CategoryDao implements Dao<Category> {
         Statement stmt = null;
         try{
             stmt = connection.createStatement();
-            int i = stmt.executeUpdate(SqlStrings.DELETE_CATEGORY_BY_ID + id);
+            int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ENTITY_BY_ID) + id);
             if(i == 1) return true;
         }catch (SQLException ex) {
             ex.printStackTrace();
@@ -174,14 +176,20 @@ public class CategoryDao implements Dao<Category> {
         return new Category(id,name, description);
     }
 
+    private static String fillScript(String script){
+        return SqlStrings.insertTableName(script, TABLE);
+    }
+
+    private static final String TABLE = "category";
+
     public static void main(String[] args) throws NameAlreadyTakenException {
         CategoryDao c = new CategoryDao();
 //        System.out.println(c.getEntity(1));
-//        System.out.println(c.getEntityByName("Food"));
+        System.out.println(c.getEntityByName("o"));
 //        System.out.println(c.getEntities(new PagingInfo(1,3)));
 //        System.out.println(c.getCount());
 //        System.out.println(c.insertEntity(new Category(0,"Food", null)));
-//        System.out.println(c.updateEntity(new Category(1,"Food", "to eat")));
+//        System.out.println(c.updateEntity(new Category(1,"Food", null)));
 //        System.out.println(c.deleteEntity(2));
     }
 }
