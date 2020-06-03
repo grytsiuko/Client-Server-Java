@@ -17,7 +17,7 @@ public class CategoryService {
         return dao.getEntity(id);
     }
 
-    public Category getCategoryByName(String name) throws NullPointerException{
+    public List<Category> getCategoryByName(String name) throws NullPointerException{
         if(name == null) throw new NullPointerException();
         return dao.getEntityByName(name);
     }

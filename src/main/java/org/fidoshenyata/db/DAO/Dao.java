@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Dao<T> {
     T getEntity(Integer id);
-    T getEntityByName(String name);
+    List<T> getEntityByName(String name);
     List<T> getEntities(PagingInfo pagingInfo);
     Integer getCount();
     boolean insertEntity(T entity) throws NameAlreadyTakenException;

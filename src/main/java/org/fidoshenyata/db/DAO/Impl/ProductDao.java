@@ -134,7 +134,7 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
-    public Product getEntityByName(String name) {
+    public List<Product> getEntityByName(String name) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -142,10 +142,12 @@ public class ProductDao implements IProductDao {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
             ps.setString(1, "%" +name+ "%");
             rs = ps.executeQuery();
-            if(rs.next())
+            List<Product> list = new ArrayList<>();
+            while(rs.next())
             {
-                return extractProductFromResultSet(rs);
+                list.add(extractProductFromResultSet(rs));
             }
+            return list;
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
@@ -157,7 +159,7 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
-    public Product getEntityByName(Integer categoryId, String name) {
+    public List<Product> getEntityByName(Integer categoryId, String name) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -166,10 +168,12 @@ public class ProductDao implements IProductDao {
             ps.setInt(1, categoryId);
             ps.setString(2, "%" +name+ "%");
             rs = ps.executeQuery();
-            if(rs.next())
+            List<Product> list = new ArrayList<>();
+            while(rs.next())
             {
-                return extractProductFromResultSet(rs);
+                list.add(extractProductFromResultSet(rs));
             }
+            return list;
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {

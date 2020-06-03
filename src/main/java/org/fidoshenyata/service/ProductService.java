@@ -37,12 +37,12 @@ public class ProductService {
         return dao.getCount(categoryId);
     }
 
-    public Product getProductByName(String name) throws NullPointerException {
+    public List<Product> getProductByName(String name) throws NullPointerException {
         if (name == null) throw new NullPointerException();
         return dao.getEntityByName(name);
     }
 
-    public Product getProductByName(Integer categoryId, String name) throws NullPointerException {
+    public List<Product> getProductByName(Integer categoryId, String name) throws NullPointerException {
         if (categoryId == null || name == null) throw new NullPointerException();
         return dao.getEntityByName(categoryId, name);
     }

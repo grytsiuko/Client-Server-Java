@@ -6,6 +6,7 @@ import org.fidoshenyata.db.DAO.Dao;
 import org.fidoshenyata.db.constants.SqlStrings;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
+import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
 import org.postgresql.util.PSQLException;
 
@@ -39,7 +40,7 @@ public class CategoryDao implements Dao<Category> {
     }
 
     @Override
-    public Category getEntityByName(String name) {
+    public List<Category> getEntityByName(String name) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -47,10 +48,12 @@ public class CategoryDao implements Dao<Category> {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
             ps.setString(1, "%" +name+ "%");
             rs = ps.executeQuery();
+            List<Category> list = new ArrayList<>();
             if(rs.next())
             {
-                return extractCategoryFromResultSet(rs);
+                list.add(extractCategoryFromResultSet(rs));
             }
+            return list;
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
