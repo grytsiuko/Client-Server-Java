@@ -1,13 +1,15 @@
 package org.fidoshenyata.db;
 
+import org.fidoshenyata.db.utils.DbProperties;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 public class ConnectionFactory {
 
-    public static final String URL = "jdbc:postgresql://localhost:5432/cslab";
-    public static final String USER = "postgres";
-    public static final String PASS = "root23";
+    public static final String URL = DbProperties.getProperty("url");
+    public static final String USER = DbProperties.getProperty("user");
+    public static final String PASS = DbProperties.getProperty("password");
 
     public static Connection getConnection(){
         try{
