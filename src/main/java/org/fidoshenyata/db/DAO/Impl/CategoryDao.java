@@ -87,26 +87,26 @@ public class CategoryDao implements Dao<Category> {
         return null;
     }
 
-//    @Override
-//    public Integer getCount() {
-//        Connection connection = ConnectionFactory.getConnection();
-//        Statement stmt = null;
-//        ResultSet rs = null;
-//        try {
-//            stmt = connection.createStatement();
-//            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-//            if (rs.next()) {
-//                return rs.getInt("count");
-//            }
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//        } finally {
-//            DbUtils.closeQuietly(rs);
-//            DbUtils.closeQuietly(stmt);
-//            DbUtils.closeQuietly(connection);
-//        }
-//        return null;
-//    }
+    @Override
+    public Integer getCount() {
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
 
     @Override
     public boolean insertEntity(Category entity) throws NameAlreadyTakenException {

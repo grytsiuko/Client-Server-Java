@@ -79,6 +79,14 @@ public class DbTest {
         List<Product> fetchedProductsByName = productService.getProductsByName("P");
         Assert.assertArrayEquals(products, fetchedProductsByName.toArray());
 
+        // categories count
+        int categoriesCount = categoryService.getCount();
+        Assert.assertEquals(4, categoriesCount);
+
+        // products count
+        int productsCount = productService.getCount();
+        Assert.assertEquals(8, productsCount);
+
         // overall cost
         BigDecimal cost = productService.getCost();
         Assert.assertEquals(new BigDecimal("45.00"), cost);
@@ -218,5 +226,9 @@ public class DbTest {
         List<Product> fetchedProductsByName =
                 productService.getProductsByName(categoryId, "uct");
         Assert.assertArrayEquals(products, fetchedProductsByName.toArray());
+
+        // products count by category
+        int count = productService.getCount(categoryId);
+        Assert.assertEquals(2, count);
     }
 }

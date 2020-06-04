@@ -9,7 +9,7 @@ public interface Dao<T> {
     T getEntity(Integer id);
     List<T> getEntitiesByName(String name);
     List<T> getEntities(PagingInfo pagingInfo);
-//    Integer getCount();
+    Integer getCount();
     boolean insertEntity(T entity) throws NameAlreadyTakenException;
     boolean updateEntity(T entity) throws NameAlreadyTakenException;
     boolean deleteEntity(Integer id);

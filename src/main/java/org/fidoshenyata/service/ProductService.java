@@ -28,14 +28,14 @@ public class ProductService {
         return dao.getEntities(categoryId, pagingInfo);
     }
 
-//    public Integer getCount() {
-//        return dao.getCount();
-//    }
-//
-//    public Integer getCount(Integer categoryId) throws NullPointerException {
-//        if (categoryId == null) throw new NullPointerException();
-//        return dao.getCount(categoryId);
-//    }
+    public Integer getCount() {
+        return dao.getCount();
+    }
+
+    public Integer getCount(Integer categoryId) throws NullPointerException {
+        if (categoryId == null) throw new NullPointerException();
+        return dao.getCount(categoryId);
+    }
 
     public List<Product> getProductsByName(String name) throws NullPointerException {
         if (name == null) throw new NullPointerException();

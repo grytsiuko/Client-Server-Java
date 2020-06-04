@@ -88,48 +88,48 @@ public class ProductDao implements IProductDao {
         return null;
     }
 
-//    @Override
-//    public Integer getCount() {
-//        Connection connection = ConnectionFactory.getConnection();
-//        Statement stmt = null;
-//        ResultSet rs = null;
-//        try {
-//            stmt = connection.createStatement();
-//            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-//            if (rs.next()) {
-//                return rs.getInt("count");
-//            }
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//        } finally {
-//            DbUtils.closeQuietly(rs);
-//            DbUtils.closeQuietly(stmt);
-//            DbUtils.closeQuietly(connection);
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public Integer getCount(Integer categoryId) {
-//        Connection connection = ConnectionFactory.getConnection();
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCT_COUNT_BY_CATEGORY));
-//            ps.setInt(1, categoryId);
-//            rs = ps.executeQuery();
-//            if (rs.next()) {
-//                return rs.getInt("count");
-//            }
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//        } finally {
-//            DbUtils.closeQuietly(rs);
-//            DbUtils.closeQuietly(ps);
-//            DbUtils.closeQuietly(connection);
-//        }
-//        return null;
-//    }
+    @Override
+    public Integer getCount() {
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
+
+    @Override
+    public Integer getCount(Integer categoryId) {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCT_COUNT_BY_CATEGORY));
+            ps.setInt(1, categoryId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(ps);
+            DbUtils.closeQuietly(connection);
+        }
+        return null;
+    }
 
     @Override
     public List<Product> getEntitiesByName(String name) {

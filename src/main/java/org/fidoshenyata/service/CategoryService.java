@@ -27,9 +27,9 @@ public class CategoryService {
         return dao.getEntities(pagingInfo);
     }
 
-//    public Integer getCount() {
-//        return dao.getCount();
-//    }
+    public Integer getCount() {
+        return dao.getCount();
+    }
 
     public boolean addCategory(Category category) throws NameAlreadyTakenException {
         if (category == null) throw new NullPointerException();
