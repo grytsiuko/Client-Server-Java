@@ -23,9 +23,8 @@ public class ProductDao implements IProductDao {
         try {
             stmt = connection.createStatement();
             rs = stmt
-                    .executeQuery( fillScript(SqlStrings.GET_ENTITY_BY_ID)+ id);
-            if(rs.next())
-            {
+                    .executeQuery(fillScript(SqlStrings.GET_ENTITY_BY_ID) + id);
+            if (rs.next()) {
                 return extractProductFromResultSet(rs);
             }
         } catch (SQLException ex) {
@@ -43,13 +42,13 @@ public class ProductDao implements IProductDao {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
-        try{
+        try {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITIES_W_PAGING));
             ps.setInt(1, pagingInfo.getOffset());
             ps.setInt(2, pagingInfo.getLimit());
             rs = ps.executeQuery();
             List<Product> list = new ArrayList<>();
-            while(rs.next()){
+            while (rs.next()) {
                 list.add(extractProductFromResultSet(rs));
             }
             return list;
@@ -68,14 +67,14 @@ public class ProductDao implements IProductDao {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
-        try{
+        try {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCTS_W_PAGING));
             ps.setInt(1, categoryId);
             ps.setInt(2, pagingInfo.getOffset());
             ps.setInt(3, pagingInfo.getLimit());
             rs = ps.executeQuery();
             List<Product> list = new ArrayList<>();
-            while(rs.next()){
+            while (rs.next()) {
                 list.add(extractProductFromResultSet(rs));
             }
             return list;
@@ -89,62 +88,60 @@ public class ProductDao implements IProductDao {
         return null;
     }
 
-    @Override
-    public Integer getCount() {
-        Connection connection = ConnectionFactory.getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
-        try{
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-            if(rs.next()){
-                return rs.getInt("count");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(connection);
-        }
-        return null;
-    }
+//    @Override
+//    public Integer getCount() {
+//        Connection connection = ConnectionFactory.getConnection();
+//        Statement stmt = null;
+//        ResultSet rs = null;
+//        try {
+//            stmt = connection.createStatement();
+//            rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
+//            if (rs.next()) {
+//                return rs.getInt("count");
+//            }
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//        } finally {
+//            DbUtils.closeQuietly(rs);
+//            DbUtils.closeQuietly(stmt);
+//            DbUtils.closeQuietly(connection);
+//        }
+//        return null;
+//    }
+//
+//    @Override
+//    public Integer getCount(Integer categoryId) {
+//        Connection connection = ConnectionFactory.getConnection();
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCT_COUNT_BY_CATEGORY));
+//            ps.setInt(1, categoryId);
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+//                return rs.getInt("count");
+//            }
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//        } finally {
+//            DbUtils.closeQuietly(rs);
+//            DbUtils.closeQuietly(ps);
+//            DbUtils.closeQuietly(connection);
+//        }
+//        return null;
+//    }
 
     @Override
-    public Integer getCount(Integer categoryId) {
-        Connection connection = ConnectionFactory.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCT_COUNT_BY_CATEGORY));
-            ps.setInt(1, categoryId);
-            rs = ps.executeQuery();
-            if(rs.next())
-            {
-                return rs.getInt("count");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(ps);
-            DbUtils.closeQuietly(connection);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Product> getEntityByName(String name) {
+    public List<Product> getEntitiesByName(String name) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_ENTITY_BY_NAME));
-            ps.setString(1, "%" +name+ "%");
+            ps.setString(1, "%" + name + "%");
             rs = ps.executeQuery();
             List<Product> list = new ArrayList<>();
-            while(rs.next())
-            {
+            while (rs.next()) {
                 list.add(extractProductFromResultSet(rs));
             }
             return list;
@@ -159,18 +156,17 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
-    public List<Product> getEntityByName(Integer categoryId, String name) {
+    public List<Product> getEntitiesByName(Integer categoryId, String name) {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             ps = connection.prepareStatement(SqlStrings.GET_PRODUCT_BY_NAME_N_CATEGORY);
             ps.setInt(1, categoryId);
-            ps.setString(2, "%" +name+ "%");
+            ps.setString(2, "%" + name + "%");
             rs = ps.executeQuery();
             List<Product> list = new ArrayList<>();
-            while(rs.next())
-            {
+            while (rs.next()) {
                 list.add(extractProductFromResultSet(rs));
             }
             return list;
@@ -189,12 +185,11 @@ public class ProductDao implements IProductDao {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
-            try {
+        try {
             stmt = connection.createStatement();
             rs = stmt
                     .executeQuery(SqlStrings.GET_COST);
-            if(rs.next())
-            {
+            if (rs.next()) {
                 return rs.getBigDecimal("cost");
             }
         } catch (SQLException ex) {
@@ -216,8 +211,7 @@ public class ProductDao implements IProductDao {
             ps = connection.prepareStatement(SqlStrings.GET_COST_BY_CATEGORY);
             ps.setInt(1, categoryId);
             rs = ps.executeQuery();
-            if(rs.next())
-            {
+            if (rs.next()) {
                 return rs.getBigDecimal("cost");
             }
         } catch (SQLException ex) {
@@ -235,17 +229,28 @@ public class ProductDao implements IProductDao {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
-            ps = connection.prepareStatement(SqlStrings.INSERT_PRODUCT);
-            ps.setString(1, entity.getName());
-            ps.setString(2, entity.getProducer());
-            ps.setString(3, entity.getDescription());
-            ps.setInt(4,entity.getAmount());
-            ps.setBigDecimal(5, entity.getPrice());
-            ps.setInt(6,entity.getCategoryId());
+            if (entity.getId() == null) {
+                ps = connection.prepareStatement(SqlStrings.INSERT_PRODUCT);
+                ps.setString(1, entity.getName());
+                ps.setString(2, entity.getProducer());
+                ps.setString(3, entity.getDescription());
+                ps.setInt(4, entity.getAmount());
+                ps.setBigDecimal(5, entity.getPrice());
+                ps.setInt(6, entity.getCategoryId());
+            } else {
+                ps = connection.prepareStatement(SqlStrings.INSERT_PRODUCT_WITH_ID);
+                ps.setInt(1, entity.getId());
+                ps.setString(2, entity.getName());
+                ps.setString(3, entity.getProducer());
+                ps.setString(4, entity.getDescription());
+                ps.setInt(5, entity.getAmount());
+                ps.setBigDecimal(6, entity.getPrice());
+                ps.setInt(7, entity.getCategoryId());
+            }
             int i = ps.executeUpdate();
             if (i == 1) return true;
-        } catch (PSQLException ex){
-            if(ex.getSQLState().equals("23505"))
+        } catch (PSQLException ex) {
+            if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -265,14 +270,14 @@ public class ProductDao implements IProductDao {
             ps.setString(1, entity.getName());
             ps.setString(2, entity.getProducer());
             ps.setString(3, entity.getDescription());
-            ps.setInt(4,entity.getAmount());
+            ps.setInt(4, entity.getAmount());
             ps.setBigDecimal(5, entity.getPrice());
-            ps.setInt(6,entity.getCategoryId());
+            ps.setInt(6, entity.getCategoryId());
             ps.setInt(7, entity.getId());
             int i = ps.executeUpdate();
             if (i == 1) return true;
-        } catch (PSQLException ex){
-            if(ex.getSQLState().equals("23505"))
+        } catch (PSQLException ex) {
+            if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -287,11 +292,11 @@ public class ProductDao implements IProductDao {
     public boolean deleteEntity(Integer id) {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
-        try{
+        try {
             stmt = connection.createStatement();
             int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ENTITY_BY_ID) + id);
-            if(i == 1) return true;
-        }catch (SQLException ex) {
+            if (i == 1) return true;
+        } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
             DbUtils.closeQuietly(stmt);
@@ -300,38 +305,37 @@ public class ProductDao implements IProductDao {
         return false;
     }
 
-    private Product extractProductFromResultSet(ResultSet rs) throws SQLException{
+    @Override
+    public boolean deleteAll() {
+        Connection connection = ConnectionFactory.getConnection();
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ALL_ENTITIES));
+            if (i == 1) return true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return false;
+    }
+
+    private Product extractProductFromResultSet(ResultSet rs) throws SQLException {
         Integer id = rs.getInt("id");
-        String name =  rs.getString("name");
-        String producer =  rs.getString("producer");
+        String name = rs.getString("name");
+        String producer = rs.getString("producer");
         String description = rs.getString("description");
         Integer amount = rs.getInt("amount");
         BigDecimal price = rs.getBigDecimal("price");
         Integer categoryId = rs.getInt("category_id");
-        return new Product(id,name,producer,description,amount,price,categoryId);
+        return new Product(id, name, producer, description, amount, price, categoryId);
     }
 
-    private static String fillScript(String script){
+    private static String fillScript(String script) {
         return SqlStrings.insertTableName(script, TABLE);
     }
 
     private static final String TABLE = "product";
-
-    public static void main(String[] args) throws NameAlreadyTakenException {
-        ProductDao p = new ProductDao();
-//        System.out.println(p.getProducts(2,new PagingInfo(0,3)));
-//        System.out.println(p.getProducts(new PagingInfo(0,3)));
-//        System.out.println(p.getCount(4));
-//        System.out.println(p.getCount());
-//        System.out.println(p.getEntityByName(1,"re"));
-//        System.out.println(p.getEntityByName("re"));
-//        System.out.println(p.getCost());
-//        System.out.println(p.getCost(2));
-//        System.out.println(p.getEntity(1));
-//        System.out.println(p.insertEntity(new Product(0,"nesquick","nestle",
-//                null,3, new BigDecimal("1.5"), 10)));
-//        System.out.println(p.updateEntity(new Product(9,"nesquik","nestle",
-//                null,3, new BigDecimal("1.5"), 10)));
-//        System.out.println(p.deleteEntity(9));
-    }
 }

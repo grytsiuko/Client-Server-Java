@@ -18,12 +18,18 @@ public class SqlStrings {
     public final static String INSERT_CATEGORY =
             "INSERT INTO category (name, description) VALUES " + "(?, ?)";
 
+    public final static String INSERT_CATEGORY_WITH_ID =
+            "INSERT INTO category (id, name, description) VALUES " + "(?, ?, ?)";
+
     public final static String UPDATE_CATEGORY =
             "UPDATE category " + "SET name = ?, description = ? " +
                     "WHERE id = ?";
 
     public final static String DELETE_ENTITY_BY_ID =
             "DELETE FROM $table WHERE id=";
+
+    public final static String DELETE_ALL_ENTITIES =
+            "DELETE FROM $table";
 
 
     public final static String GET_PRODUCT_BY_NAME_N_CATEGORY =
@@ -46,6 +52,11 @@ public class SqlStrings {
             "INSERT INTO product" +
                     " (name, producer, description, amount, price, category_id) " +
                     " VALUES " + "(?, ?, ?, ?, ?, ?)";
+
+    public final static String INSERT_PRODUCT_WITH_ID =
+            "INSERT INTO product" +
+                    " (id, name, producer, description, amount, price, category_id) " +
+                    " VALUES " + "(?, ?, ?, ?, ?, ?, ?)";
 
     public final static String UPDATE_PRODUCT =
             "UPDATE product " +

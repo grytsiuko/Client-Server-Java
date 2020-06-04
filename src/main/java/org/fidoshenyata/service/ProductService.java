@@ -28,23 +28,23 @@ public class ProductService {
         return dao.getEntities(categoryId, pagingInfo);
     }
 
-    public Integer getCount() {
-        return dao.getCount();
-    }
+//    public Integer getCount() {
+//        return dao.getCount();
+//    }
+//
+//    public Integer getCount(Integer categoryId) throws NullPointerException {
+//        if (categoryId == null) throw new NullPointerException();
+//        return dao.getCount(categoryId);
+//    }
 
-    public Integer getCount(Integer categoryId) throws NullPointerException {
-        if (categoryId == null) throw new NullPointerException();
-        return dao.getCount(categoryId);
-    }
-
-    public List<Product> getProductByName(String name) throws NullPointerException {
+    public List<Product> getProductsByName(String name) throws NullPointerException {
         if (name == null) throw new NullPointerException();
-        return dao.getEntityByName(name);
+        return dao.getEntitiesByName(name);
     }
 
-    public List<Product> getProductByName(Integer categoryId, String name) throws NullPointerException {
+    public List<Product> getProductsByName(Integer categoryId, String name) throws NullPointerException {
         if (categoryId == null || name == null) throw new NullPointerException();
-        return dao.getEntityByName(categoryId, name);
+        return dao.getEntitiesByName(categoryId, name);
     }
 
     public BigDecimal getCost() {
@@ -69,6 +69,10 @@ public class ProductService {
     public boolean deleteEntity(Integer id) throws NullPointerException {
         if (id == null) throw new NullPointerException();
         return dao.deleteEntity(id);
+    }
+
+    public boolean deleteAllEntities() {
+        return dao.deleteAll();
     }
 
 }
