@@ -14,7 +14,6 @@ public class Product {
     @NonNull
     private final String producer;
     private final String description;
-    @NonNull
     private final Integer amount;
     @NonNull
     private final BigDecimal price;

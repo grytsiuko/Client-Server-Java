@@ -1,10 +1,13 @@
 package org.fidoshenyata.service;
 
+import com.sun.nio.sctp.IllegalReceiveException;
 import lombok.AllArgsConstructor;
 import org.fidoshenyata.db.DAO.IProductDao;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
+import org.fidoshenyata.exceptions.db.NoSuchProductException;
+import org.fidoshenyata.exceptions.db.NotEnoughProductException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,17 +16,17 @@ import java.util.List;
 public class ProductService {
     private final IProductDao dao;
 
-    public Product getProduct(Integer id) throws NullPointerException {
+    public Product getProduct(Integer id) {
         if (id == null) throw new NullPointerException();
         return dao.getEntity(id);
     }
 
-    public List<Product> getProducts(PagingInfo pagingInfo) throws NullPointerException {
+    public List<Product> getProducts(PagingInfo pagingInfo) {
         if (pagingInfo == null) throw new NullPointerException();
         return dao.getEntities(pagingInfo);
     }
 
-    public List<Product> getProducts(Integer categoryId, PagingInfo pagingInfo) throws NullPointerException {
+    public List<Product> getProducts(Integer categoryId, PagingInfo pagingInfo) {
         if (categoryId == null || pagingInfo == null) throw new NullPointerException();
         return dao.getEntities(categoryId, pagingInfo);
     }
@@ -32,17 +35,17 @@ public class ProductService {
         return dao.getCount();
     }
 
-    public Integer getCount(Integer categoryId) throws NullPointerException {
+    public Integer getCount(Integer categoryId) {
         if (categoryId == null) throw new NullPointerException();
         return dao.getCount(categoryId);
     }
 
-    public List<Product> getProductsByName(String name) throws NullPointerException {
+    public List<Product> getProductsByName(String name) {
         if (name == null) throw new NullPointerException();
         return dao.getEntitiesByName(name);
     }
 
-    public List<Product> getProductsByName(Integer categoryId, String name) throws NullPointerException {
+    public List<Product> getProductsByName(Integer categoryId, String name) {
         if (categoryId == null || name == null) throw new NullPointerException();
         return dao.getEntitiesByName(categoryId, name);
     }
@@ -51,24 +54,36 @@ public class ProductService {
         return dao.getCost();
     }
 
-    public BigDecimal getCost(Integer categoryId) throws NullPointerException {
+    public BigDecimal getCost(Integer categoryId) {
         if (categoryId == null) throw new NullPointerException();
         return dao.getCost(categoryId);
     }
 
-    public boolean addProduct(Product product) throws NameAlreadyTakenException, NullPointerException {
+    public boolean addProduct(Product product) throws NameAlreadyTakenException {
         if (product == null) throw new NullPointerException();
         return dao.insertEntity(product);
     }
 
-    public boolean updateProduct(Product product) throws NameAlreadyTakenException, NullPointerException {
+    public boolean updateProduct(Product product) throws NameAlreadyTakenException {
         if (product == null) throw new NullPointerException();
         return dao.updateEntity(product);
     }
 
-    public boolean deleteEntity(Integer id) throws NullPointerException {
+    public boolean deleteEntity(Integer id) {
         if (id == null) throw new NullPointerException();
         return dao.deleteEntity(id);
+    }
+
+    public boolean increaseAmount(Integer id, Integer amount) throws NoSuchProductException {
+        if (id == null || amount == null) throw new NullPointerException();
+        if (amount <= 0) throw new IllegalReceiveException("Should be more than zero");
+        return dao.increaseAmount(id, amount);
+    }
+
+    public boolean decreaseAmount(Integer id, Integer amount) throws NoSuchProductException, NotEnoughProductException {
+        if (id == null || amount == null) throw new NullPointerException();
+        if (amount <= 0) throw new IllegalReceiveException("Should be more than zero");
+        return dao.decreaseAmount(id, amount);
     }
 
     public boolean deleteAllEntities() {

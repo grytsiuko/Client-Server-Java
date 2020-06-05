@@ -61,7 +61,18 @@ public class SqlStrings {
     public final static String UPDATE_PRODUCT =
             "UPDATE product " +
                     " SET name = ?, producer = ?, description = ?, " +
-                    " amount = ?, price = ?, category_id = ? " +
+                    "     price = ?, category_id = ? " +
+                    " WHERE id = ?";
+
+
+    public final static String UPDATE_AMOUNT =
+            "UPDATE product " +
+                    " SET amount = ? " +
+                    " WHERE id = ?";
+
+    public final static String GET_AMOUNT =
+            "SELECT amount " +
+                    " FROM product " +
                     " WHERE id = ?";
 
 

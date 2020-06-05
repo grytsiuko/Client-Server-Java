@@ -7,6 +7,8 @@ import org.fidoshenyata.db.constants.SqlStrings;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
+import org.fidoshenyata.exceptions.db.NoSuchProductException;
+import org.fidoshenyata.exceptions.db.NotEnoughProductException;
 import org.postgresql.util.PSQLException;
 
 import java.math.BigDecimal;
@@ -270,10 +272,9 @@ public class ProductDao implements IProductDao {
             ps.setString(1, entity.getName());
             ps.setString(2, entity.getProducer());
             ps.setString(3, entity.getDescription());
-            ps.setInt(4, entity.getAmount());
-            ps.setBigDecimal(5, entity.getPrice());
-            ps.setInt(6, entity.getCategoryId());
-            ps.setInt(7, entity.getId());
+            ps.setBigDecimal(4, entity.getPrice());
+            ps.setInt(5, entity.getCategoryId());
+            ps.setInt(6, entity.getId());
             int i = ps.executeUpdate();
             if (i == 1) return true;
         } catch (PSQLException ex) {
@@ -317,6 +318,84 @@ public class ProductDao implements IProductDao {
             ex.printStackTrace();
         } finally {
             DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean increaseAmount(Integer productId, Integer amount) throws NoSuchProductException {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps1 = null;
+        PreparedStatement ps2 = null;
+        ResultSet rs = null;
+        try {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+            ps1 = connection.prepareStatement(SqlStrings.GET_AMOUNT);
+            ps1.setInt(1, productId);
+
+            rs = ps1.executeQuery();
+            int amountOld;
+            if (rs.next()) {
+                amountOld = rs.getInt("amount");
+            } else {
+                throw new NoSuchProductException();
+            }
+
+            int amountNew = amountOld + amount;
+
+            ps2 = connection.prepareStatement(SqlStrings.UPDATE_AMOUNT);
+            ps2.setInt(1, amountNew);
+            ps2.setInt(2, productId);
+            int i = ps2.executeUpdate();
+            if (i == 1) return true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(ps1);
+            DbUtils.closeQuietly(ps2);
+            DbUtils.closeQuietly(connection);
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean decreaseAmount(Integer productId, Integer amount) throws NoSuchProductException, NotEnoughProductException {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement ps1 = null;
+        PreparedStatement ps2 = null;
+        ResultSet rs = null;
+        try {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+            ps1 = connection.prepareStatement(SqlStrings.GET_AMOUNT);
+            ps1.setInt(1, productId);
+
+            rs = ps1.executeQuery();
+            int amountOld;
+            if (rs.next()) {
+                amountOld = rs.getInt("amount");
+            } else {
+                throw new NoSuchProductException();
+            }
+
+            int amountNew = amountOld - amount;
+
+            if (amountNew < 0){
+                throw new NotEnoughProductException();
+            }
+
+            ps2 = connection.prepareStatement(SqlStrings.UPDATE_AMOUNT);
+            ps2.setInt(1, amountNew);
+            ps2.setInt(2, productId);
+            int i = ps2.executeUpdate();
+            if (i == 1) return true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DbUtils.closeQuietly(ps1);
+            DbUtils.closeQuietly(ps2);
             DbUtils.closeQuietly(connection);
         }
         return false;

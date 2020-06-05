@@ -6,6 +6,7 @@ import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
+import org.fidoshenyata.exceptions.db.NotEnoughProductException;
 import org.fidoshenyata.service.CategoryService;
 import org.fidoshenyata.service.ProductService;
 import org.junit.Assert;
@@ -142,9 +143,11 @@ public class DbTest {
         Assert.assertEquals(product, fetched1);
 
         // update
+        Product productToUpdate = new Product(productId, "Product 2.1 New", "Producer 2.1 New",
+                null, null, new BigDecimal("10.50"), categoryId);
         product = new Product(productId, "Product 2.1 New", "Producer 2.1 New",
-                null, 5, new BigDecimal("10.50"), categoryId);
-        Assert.assertTrue(productService.updateProduct(product));
+                null, 3, new BigDecimal("10.50"), categoryId);
+        Assert.assertTrue(productService.updateProduct(productToUpdate));
 
         // get
         Product fetched2 = productService.getProduct(productId);
@@ -230,5 +233,50 @@ public class DbTest {
         // products count by category
         int count = productService.getCount(categoryId);
         Assert.assertEquals(2, count);
+    }
+
+    @Test
+    public void testChangeAmount() throws Exception {
+        final int categoryId = 7;
+        final int productId = 7;
+
+        // insert category
+        Category category = new Category(categoryId, "Category 6.1", null);
+        Assert.assertTrue(categoryService.addCategory(category));
+
+        // insert
+        Product product =
+                new Product(productId, "Product 6.1", "PC",
+                        null, 5, new BigDecimal("10.00"), categoryId);
+        Assert.assertTrue(productService.addProduct(product));
+
+        // increase and decrease amount
+        Assert.assertTrue(productService.increaseAmount(productId, 10));
+        Assert.assertTrue(productService.increaseAmount(productId, 5));
+        Assert.assertTrue(productService.decreaseAmount(productId, 3));
+        Assert.assertTrue(productService.decreaseAmount(productId, 7));
+
+        // check amount
+        int amount = productService.getProduct(productId).getAmount();
+        Assert.assertEquals(10, amount);
+    }
+
+    @Test(expected = NotEnoughProductException.class)
+    public void testNotEnoughProduct() throws Exception {
+        final int categoryId = 8;
+        final int productId = 8;
+
+        // insert category
+        Category category = new Category(categoryId, "Category 7.1", null);
+        Assert.assertTrue(categoryService.addCategory(category));
+
+        // insert
+        Product product =
+                new Product(productId, "Product 7.1", "PC",
+                        null, 5, new BigDecimal("10.00"), categoryId);
+        Assert.assertTrue(productService.addProduct(product));
+
+        // try to decrease amount
+        productService.decreaseAmount(productId, 6);
     }
 }
