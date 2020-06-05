@@ -6,9 +6,7 @@ import org.fidoshenyata.db.DAO.IProductDao;
 import org.fidoshenyata.db.constants.SqlStrings;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
-import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
-import org.fidoshenyata.exceptions.db.NoSuchProductException;
-import org.fidoshenyata.exceptions.db.NotEnoughProductException;
+import org.fidoshenyata.exceptions.db.*;
 import org.postgresql.util.PSQLException;
 
 import java.math.BigDecimal;
@@ -18,7 +16,7 @@ import java.util.List;
 
 public class ProductDao implements IProductDao {
     @Override
-    public Product getEntity(Integer id) {
+    public Product getEntity(Integer id) throws NoEntityWithSuchIdException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
@@ -28,19 +26,20 @@ public class ProductDao implements IProductDao {
                     .executeQuery(fillScript(SqlStrings.GET_ENTITY_BY_ID) + id);
             if (rs.next()) {
                 return extractProductFromResultSet(rs);
+            } else {
+                throw new NoEntityWithSuchIdException();
             }
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Product> getEntities(PagingInfo pagingInfo) {
+    public List<Product> getEntities(PagingInfo pagingInfo) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -55,17 +54,16 @@ public class ProductDao implements IProductDao {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Product> getEntities(Integer categoryId, PagingInfo pagingInfo) {
+    public List<Product> getEntities(Integer categoryId, PagingInfo pagingInfo) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -81,38 +79,35 @@ public class ProductDao implements IProductDao {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public Integer getCount() {
+    public Integer getCount() throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
             stmt = connection.createStatement();
             rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-            if (rs.next()) {
-                return rs.getInt("count");
-            }
+            rs.next();
+            return rs.getInt("count");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public Integer getCount(Integer categoryId) {
+    public Integer getCount(Integer categoryId) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -120,21 +115,19 @@ public class ProductDao implements IProductDao {
             ps = connection.prepareStatement(fillScript(SqlStrings.GET_PRODUCT_COUNT_BY_CATEGORY));
             ps.setInt(1, categoryId);
             rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("count");
-            }
+            rs.next();
+            return rs.getInt("count");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Product> getEntitiesByName(String name) {
+    public List<Product> getEntitiesByName(String name) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -148,17 +141,16 @@ public class ProductDao implements IProductDao {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Product> getEntitiesByName(Integer categoryId, String name) {
+    public List<Product> getEntitiesByName(Integer categoryId, String name) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -173,17 +165,16 @@ public class ProductDao implements IProductDao {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public BigDecimal getCost() {
+    public BigDecimal getCost() throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
@@ -191,21 +182,19 @@ public class ProductDao implements IProductDao {
             stmt = connection.createStatement();
             rs = stmt
                     .executeQuery(SqlStrings.GET_COST);
-            if (rs.next()) {
-                return rs.getBigDecimal("cost");
-            }
+            rs.next();
+            return rs.getBigDecimal("cost");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public BigDecimal getCost(Integer categoryId) {
+    public BigDecimal getCost(Integer categoryId) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -213,21 +202,19 @@ public class ProductDao implements IProductDao {
             ps = connection.prepareStatement(SqlStrings.GET_COST_BY_CATEGORY);
             ps.setInt(1, categoryId);
             rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getBigDecimal("cost");
-            }
+            rs.next();
+            return rs.getBigDecimal("cost");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public boolean insertEntity(Product entity) throws NameAlreadyTakenException {
+    public boolean insertEntity(Product entity) throws NameAlreadyTakenException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -250,21 +237,22 @@ public class ProductDao implements IProductDao {
                 ps.setInt(7, entity.getCategoryId());
             }
             int i = ps.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
+            else
+                throw new InternalSQLException();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean updateEntity(Product entity) throws NameAlreadyTakenException {
+    public boolean updateEntity(Product entity) throws NameAlreadyTakenException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -276,55 +264,54 @@ public class ProductDao implements IProductDao {
             ps.setInt(5, entity.getCategoryId());
             ps.setInt(6, entity.getId());
             int i = ps.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
+            else
+                throw new InternalSQLException();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean deleteEntity(Integer id) {
+    public boolean deleteEntity(Integer id) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
             int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ENTITY_BY_ID) + id);
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean deleteAll() {
+    public boolean deleteAll() throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
             int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ALL_ENTITIES));
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public Boolean increaseAmount(Integer productId, Integer amount) throws NoSuchProductException {
+    public Boolean increaseAmount(Integer productId, Integer amount) throws NoSuchProductException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
@@ -349,19 +336,18 @@ public class ProductDao implements IProductDao {
             ps2.setInt(1, amountNew);
             ps2.setInt(2, productId);
             int i = ps2.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps1);
             DbUtils.closeQuietly(ps2);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public Boolean decreaseAmount(Integer productId, Integer amount) throws NoSuchProductException, NotEnoughProductException {
+    public Boolean decreaseAmount(Integer productId, Integer amount) throws NoSuchProductException, NotEnoughProductException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
@@ -390,15 +376,14 @@ public class ProductDao implements IProductDao {
             ps2.setInt(1, amountNew);
             ps2.setInt(2, productId);
             int i = ps2.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps1);
             DbUtils.closeQuietly(ps2);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     private Product extractProductFromResultSet(ResultSet rs) throws SQLException {

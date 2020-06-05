@@ -17,7 +17,7 @@ public class CSUdpTestServerDown {
     public void setUp() {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
-                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                .commandType(Message.COMMAND_ADD_PRODUCT)
                 .message("Hello From Client!");
 
         requestMessage = messageBuilder.build();

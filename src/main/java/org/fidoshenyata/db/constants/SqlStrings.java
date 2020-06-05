@@ -13,7 +13,7 @@ public class SqlStrings {
                     "ORDER BY name DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
 
     public final static String GET_ENTITY_COUNT =
-            "SELECT COUNT( id ) FROM $table";
+            "SELECT COUNT( * ) FROM $table";
 
     public final static String INSERT_CATEGORY =
             "INSERT INTO category (name, description) VALUES " + "(?, ?)";
@@ -36,14 +36,14 @@ public class SqlStrings {
             "SELECT * FROM product WHERE category_id = ? AND name LIKE ?";
 
     public final static String GET_PRODUCT_COUNT_BY_CATEGORY =
-            "SELECT COUNT( id ) FROM $table WHERE category_id = ?";
+            "SELECT COUNT( * ) FROM $table WHERE category_id = ?";
 
     public final static String GET_PRODUCTS_W_PAGING =
             "SELECT * FROM $table " + "WHERE category_id = ? " +
                     "ORDER BY name DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
 
     public final static String GET_COST =
-            "SELECT SUM(amount * price) AS cost FROM product";
+            "SELECT COALESCE(SUM(amount * price), 0) AS cost FROM product";
 
     public final static String GET_COST_BY_CATEGORY =
             GET_COST + " WHERE category_id = ?";

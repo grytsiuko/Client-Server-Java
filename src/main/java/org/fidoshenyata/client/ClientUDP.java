@@ -102,7 +102,7 @@ public class ClientUDP implements ClientCS {
 
         Message requestMessage = Message.builder()
                 .userID(2048)
-                .commandType(Message.CommandTypes.ADD_PRODUCT.ordinal())
+                .commandType(Message.COMMAND_ADD_PRODUCT)
                 .message("Hello From Client!")
                 .build();
 

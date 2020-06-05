@@ -19,4 +19,8 @@ public class Product {
     private final BigDecimal price;
     @NonNull
     private final Integer categoryId;
+
+    public static final int MAX_NAME_LENGTH = 100;
+    public static final int MAX_PRODUCER_LENGTH = 100;
+    public static final int MAX_DESCRIPTION_LENGTH = 255;
 }

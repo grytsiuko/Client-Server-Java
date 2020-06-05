@@ -121,7 +121,6 @@ public class DbTest {
 
         // delete
         Assert.assertTrue(categoryService.deleteCategory(categoryId));
-        Assert.assertNull(categoryService.getCategory(categoryId));
     }
 
     @Test
@@ -155,7 +154,6 @@ public class DbTest {
 
         // delete
         Assert.assertTrue(productService.deleteEntity(productId));
-        Assert.assertNull(productService.getProduct(productId));
     }
 
     @Test(expected = NameAlreadyTakenException.class)

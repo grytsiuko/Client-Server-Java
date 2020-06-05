@@ -7,7 +7,9 @@ import org.fidoshenyata.db.constants.SqlStrings;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
+import org.fidoshenyata.exceptions.db.InternalSQLException;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
+import org.fidoshenyata.exceptions.db.NoEntityWithSuchIdException;
 import org.postgresql.util.PSQLException;
 
 import java.sql.*;
@@ -17,7 +19,7 @@ import java.util.List;
 public class CategoryDao implements Dao<Category> {
 
     @Override
-    public Category getEntity(Integer id) {
+    public Category getEntity(Integer id) throws NoEntityWithSuchIdException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
@@ -27,19 +29,20 @@ public class CategoryDao implements Dao<Category> {
                     .executeQuery(fillScript(SqlStrings.GET_ENTITY_BY_ID) + id);
             if (rs.next()) {
                 return extractCategoryFromResultSet(rs);
+            } else {
+                throw new NoEntityWithSuchIdException();
             }
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Category> getEntitiesByName(String name) {
+    public List<Category> getEntitiesByName(String name) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -53,17 +56,16 @@ public class CategoryDao implements Dao<Category> {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public List<Category> getEntities(PagingInfo pagingInfo) {
+    public List<Category> getEntities(PagingInfo pagingInfo) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -78,38 +80,35 @@ public class CategoryDao implements Dao<Category> {
             }
             return list;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public Integer getCount() {
+    public Integer getCount() throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
             stmt = connection.createStatement();
             rs = stmt.executeQuery(fillScript(SqlStrings.GET_ENTITY_COUNT));
-            if (rs.next()) {
-                return rs.getInt("count");
-            }
+            rs.next();
+            return rs.getInt("count");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(rs);
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return null;
     }
 
     @Override
-    public boolean insertEntity(Category entity) throws NameAlreadyTakenException {
+    public boolean insertEntity(Category entity) throws NameAlreadyTakenException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -124,21 +123,22 @@ public class CategoryDao implements Dao<Category> {
                 ps.setString(3, entity.getDescription());
             }
             int i = ps.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
+            else
+                throw new InternalSQLException();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean updateEntity(Category entity) throws NameAlreadyTakenException {
+    public boolean updateEntity(Category entity) throws NameAlreadyTakenException, InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -147,51 +147,50 @@ public class CategoryDao implements Dao<Category> {
             ps.setString(2, entity.getDescription());
             ps.setInt(3, entity.getId());
             int i = ps.executeUpdate();
-            if (i == 1) return true;
+            return i == 1;
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
+            else
+                throw new InternalSQLException();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(ps);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean deleteEntity(Integer id) {
+    public boolean deleteEntity(Integer id) throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
             int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ENTITY_BY_ID) + id);
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     @Override
-    public boolean deleteAll() {
+    public boolean deleteAll() throws InternalSQLException {
         Connection connection = ConnectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
             int i = stmt.executeUpdate(fillScript(SqlStrings.DELETE_ALL_ENTITIES));
-            if (i == 1) return true;
+            return i == 1;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            throw new InternalSQLException();
         } finally {
             DbUtils.closeQuietly(stmt);
             DbUtils.closeQuietly(connection);
         }
-        return false;
     }
 
     private Category extractCategoryFromResultSet(ResultSet rs) throws SQLException {
