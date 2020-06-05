@@ -74,10 +74,12 @@ public class DbTest {
 
         // getCategoriesByName
         List<Category> fetchedCategoriesByName = categoryService.getCategoriesByName("C");
+        Collections.reverse(fetchedCategoriesByName);
         Assert.assertArrayEquals(categories, fetchedCategoriesByName.toArray());
 
         // getProductsByName
         List<Product> fetchedProductsByName = productService.getProductsByName("P");
+        Collections.reverse(fetchedProductsByName);
         Assert.assertArrayEquals(products, fetchedProductsByName.toArray());
 
         // categories count
@@ -226,6 +228,7 @@ public class DbTest {
         // products by name by category
         List<Product> fetchedProductsByName =
                 productService.getProductsByName(categoryId, "uct");
+        Collections.reverse(fetchedProductsByName);
         Assert.assertArrayEquals(products, fetchedProductsByName.toArray());
 
         // products count by category

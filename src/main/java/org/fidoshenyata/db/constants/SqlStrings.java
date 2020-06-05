@@ -6,11 +6,11 @@ public class SqlStrings {
             "SELECT * FROM $table WHERE id =";
 
     public final static String GET_ENTITY_BY_NAME =
-            "SELECT * FROM $table WHERE name LIKE ?";
+            "SELECT * FROM $table WHERE name LIKE ? ORDER BY id DESC";
 
     public final static String GET_ENTITIES_W_PAGING =
             "SELECT * FROM $table " +
-                    "ORDER BY name DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
+                    " ORDER BY id DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
 
     public final static String GET_ENTITY_COUNT =
             "SELECT COUNT( * ) FROM $table";
@@ -33,14 +33,14 @@ public class SqlStrings {
 
 
     public final static String GET_PRODUCT_BY_NAME_N_CATEGORY =
-            "SELECT * FROM product WHERE category_id = ? AND name LIKE ?";
+            "SELECT * FROM product WHERE category_id = ? AND name LIKE ?  ORDER BY id DESC";
 
     public final static String GET_PRODUCT_COUNT_BY_CATEGORY =
             "SELECT COUNT( * ) FROM $table WHERE category_id = ?";
 
     public final static String GET_PRODUCTS_W_PAGING =
             "SELECT * FROM $table " + "WHERE category_id = ? " +
-                    "ORDER BY name DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
+                    " ORDER BY id DESC " + " OFFSET ? " + " FETCH FIRST ? ROWS ONLY";
 
     public final static String GET_COST =
             "SELECT COALESCE(SUM(amount * price), 0) AS cost FROM product";
