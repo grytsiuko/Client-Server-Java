@@ -8,9 +8,7 @@ import org.fidoshenyata.db.DAO.Impl.CategoryDao;
 import org.fidoshenyata.db.DAO.Impl.ProductDao;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
-import org.fidoshenyata.exceptions.db.IllegalJSONException;
-import org.fidoshenyata.exceptions.db.InternalSQLException;
-import org.fidoshenyata.exceptions.db.ServerSideJSONException;
+import org.fidoshenyata.exceptions.db.*;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.service.CategoryService;
@@ -28,7 +26,7 @@ public class ProcessorCorrectImpl implements Processor {
 
     public ProcessorCorrectImpl() {
         categoryService = new CategoryService(new CategoryDao());
-        productService  = new ProductService(new ProductDao());
+        productService = new ProductService(new ProductDao());
         processorUtils = new ProcessorUtils();
     }
 
@@ -44,39 +42,126 @@ public class ProcessorCorrectImpl implements Processor {
         return packetBuilder.build();
     }
 
-    private Message processMessage(Message message) {
+    private Message processMessage(Message messageBlock) {
 
-        int userID = message.getUserID();
+        int userID = messageBlock.getUserID();
+        int commandType = messageBlock.getCommandType();
+        String message = messageBlock.getMessage();
+        String response = null;
 
         try {
-            switch (message.getCommandType()) {
+
+            switch (commandType) {
+
                 case COMMAND_GET_CATEGORIES:
-                    PagingInfo pagingInfo = processorUtils.extractPagingInfo(message.getMessage());
-                    List<Category> categories = categoryService.getCategories(pagingInfo);
-                    pagingInfo.setTotal(categoryService.getCount());
-                    String response = processorUtils.generatePagingReply(categories, pagingInfo);
-                    return processorUtils.buildSuccessMessage(response, userID);
+                    response = processGetCategories(message);
+                    break;
+
+                case COMMAND_GET_CATEGORIES_BY_NAME:
+                    response = processGetCategoriesByName(message);
+                    break;
+
+                case COMMAND_GET_CATEGORY_BY_ID:
+                    response = processGetCategoryById(message);
+                    break;
+
+                case COMMAND_ADD_CATEGORY:
+                    response = processAddCategory(message);
+                    break;
             }
+
         } catch (IllegalJSONException e) {
             return processorUtils.buildErrorMessage("Illegal JSON", userID);
         } catch (InternalSQLException e) {
             return processorUtils.buildErrorMessage("Internal SQL error", userID);
         } catch (ServerSideJSONException e) {
             return processorUtils.buildErrorMessage("Error while creating response", userID);
+        } catch (NoEntityWithSuchIdException e) {
+            return processorUtils.buildErrorMessage("No entity with such ID", userID);
+        } catch (AbsentFieldsJSONException e) {
+            return processorUtils.buildErrorMessage("Some fields are absent", userID);
+        } catch (NameAlreadyTakenException e) {
+            return processorUtils.buildErrorMessage("Such name already exists", userID);
+        } catch (IllegalFieldException e) {
+            return processorUtils.buildErrorMessage("Illegal value of some fields", userID);
         }
 
-        return processorUtils.buildErrorMessage("No such command", userID);
+        if (response == null) {
+            return processorUtils.buildErrorMessage("No such command", userID);
+        } else {
+            return processorUtils.buildSuccessMessage(response, userID);
+        }
+
     }
+
+    private String processGetCategories(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException {
+
+        PagingInfo pagingInfo = processorUtils.extractPagingInfo(message);
+        List<Category> categories = categoryService.getCategories(pagingInfo);
+        pagingInfo.setTotal(categoryService.getCount());
+        return processorUtils.generatePagingReply(categories, pagingInfo);
+    }
+
+    private String processGetCategoriesByName(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException {
+
+        String name = processorUtils.extractName(message);
+        List<Category> categories = categoryService.getCategoriesByName(name);
+        return processorUtils.generateListReply(categories);
+    }
+
+    private String processGetCategoryById(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, NoEntityWithSuchIdException {
+
+        Integer id = processorUtils.extractId(message);
+        Category category = categoryService.getCategory(id);
+        return processorUtils.generateOneEntityReply(category);
+    }
+
+    private String processAddCategory(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException {
+
+        Category category = processorUtils.extractCategory(message);
+        categoryService.addCategory(category);
+        return processorUtils.generateSuccessMessageReply("Successfully added category");
+    }
+
 
     public static void main(String[] args) {
         ProcessorCorrectImpl processor = new ProcessorCorrectImpl();
+
         Message getAllCategories = Message.builder()
                 .userID(12)
                 .commandType(COMMAND_GET_CATEGORIES)
-                .message("{\"offset\": 0, \"limit\": 1}")
+                .message("{\"offset\": 0, \"limit\": 10}")
                 .build();
         Message getAllCategoriesResponse = processor.processMessage(getAllCategories);
-
         System.out.println(getAllCategoriesResponse);
+
+        Message getAllCategoriesByName = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_GET_CATEGORIES_BY_NAME)
+                .message("{\"name\": \"egory 7\"}")
+                .build();
+        Message getAllCategoriesByNameResponse = processor.processMessage(getAllCategoriesByName);
+        System.out.println(getAllCategoriesByNameResponse);
+
+        Message getCategoryById = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_GET_CATEGORY_BY_ID)
+                .message("{\"id\": 103}")
+                .build();
+        Message getCategoryByIdResponse = processor.processMessage(getCategoryById);
+        System.out.println(getCategoryByIdResponse);
+
+        Message addCategory = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_ADD_CATEGORY)
+                .message("{\"name\": \"New New Name\", \"description\": \"Hey\"}")
+                .build();
+        Message addCategoryResponse = processor.processMessage(addCategory);
+        System.out.println(addCategoryResponse);
+
     }
 }
