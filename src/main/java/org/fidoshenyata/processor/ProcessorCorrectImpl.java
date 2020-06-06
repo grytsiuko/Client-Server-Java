@@ -23,11 +23,15 @@ public class ProcessorCorrectImpl implements Processor {
     private CategoryService categoryService;
     private ProductService productService;
     private ProcessorUtils processorUtils;
+    private JsonReader jsonReader;
+    private JsonWriter jsonWriter;
 
     public ProcessorCorrectImpl() {
         categoryService = new CategoryService(new CategoryDao());
         productService = new ProductService(new ProductDao());
         processorUtils = new ProcessorUtils();
+        jsonReader = new JsonReader();
+        jsonWriter = new JsonWriter();
     }
 
     @Override
@@ -97,34 +101,34 @@ public class ProcessorCorrectImpl implements Processor {
     private String processGetCategories(String message)
             throws IllegalJSONException, InternalSQLException, ServerSideJSONException {
 
-        PagingInfo pagingInfo = processorUtils.extractPagingInfo(message);
+        PagingInfo pagingInfo = jsonReader.extractPagingInfo(message);
         List<Category> categories = categoryService.getCategories(pagingInfo);
         pagingInfo.setTotal(categoryService.getCount());
-        return processorUtils.generatePagingReply(categories, pagingInfo);
+        return jsonWriter.generatePagingReply(categories, pagingInfo);
     }
 
     private String processGetCategoriesByName(String message)
             throws IllegalJSONException, InternalSQLException, ServerSideJSONException {
 
-        String name = processorUtils.extractName(message);
+        String name = jsonReader.extractName(message);
         List<Category> categories = categoryService.getCategoriesByName(name);
-        return processorUtils.generateListReply(categories);
+        return jsonWriter.generateListReply(categories);
     }
 
     private String processGetCategoryById(String message)
             throws IllegalJSONException, InternalSQLException, ServerSideJSONException, NoEntityWithSuchIdException {
 
-        Integer id = processorUtils.extractId(message);
+        Integer id = jsonReader.extractId(message);
         Category category = categoryService.getCategory(id);
-        return processorUtils.generateOneEntityReply(category);
+        return jsonWriter.generateOneEntityReply(category);
     }
 
     private String processAddCategory(String message)
             throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException {
 
-        Category category = processorUtils.extractCategory(message);
+        Category category = jsonReader.extractCategory(message);
         categoryService.addCategory(category);
-        return processorUtils.generateSuccessMessageReply("Successfully added category");
+        return jsonWriter.generateSuccessMessageReply("Successfully added category");
     }
 
 
