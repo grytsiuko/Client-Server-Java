@@ -9,10 +9,7 @@ import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
 import org.fidoshenyata.exceptions.db.NotEnoughProductException;
 import org.fidoshenyata.service.CategoryService;
 import org.fidoshenyata.service.ProductService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -22,6 +19,15 @@ public class DbTest {
 
     private CategoryService categoryService;
     private ProductService productService;
+
+    @AfterClass
+    public static void clearDB() throws Exception {
+        CategoryService categoryService = new CategoryService(new CategoryDao());
+        ProductService productService = new ProductService(new ProductDao());
+
+        productService.deleteAllEntities();
+        categoryService.deleteAllEntities();
+    }
 
     @BeforeClass
     public static void initDB() throws Exception {

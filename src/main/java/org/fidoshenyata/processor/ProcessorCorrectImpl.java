@@ -72,6 +72,18 @@ public class ProcessorCorrectImpl implements Processor {
                 case COMMAND_ADD_CATEGORY:
                     response = processAddCategory(message);
                     break;
+
+                case COMMAND_UPDATE_CATEGORY:
+                    response = processUpdateCategory(message);
+                    break;
+
+                case COMMAND_DELETE_CATEGORY:
+                    response = processDeleteCategory(message);
+                    break;
+
+                case COMMAND_DELETE_ALL_CATEGORIES:
+                    response = processDeleteAllCategories();
+                    break;
             }
 
         } catch (IllegalJSONException e) {
@@ -82,7 +94,7 @@ public class ProcessorCorrectImpl implements Processor {
             return processorUtils.buildErrorMessage("Error while creating response", userID);
         } catch (NoEntityWithSuchIdException e) {
             return processorUtils.buildErrorMessage("No entity with such ID", userID);
-        } catch (AbsentFieldsJSONException e) {
+        } catch (AbsentFieldsJSONException | NullPointerException e) {
             return processorUtils.buildErrorMessage("Some fields are absent", userID);
         } catch (NameAlreadyTakenException e) {
             return processorUtils.buildErrorMessage("Such name already exists", userID);
@@ -131,9 +143,57 @@ public class ProcessorCorrectImpl implements Processor {
         return jsonWriter.generateSuccessMessageReply("Successfully added category");
     }
 
+    private String processUpdateCategory(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException {
+
+        Category category = jsonReader.extractCategory(message);
+        categoryService.updateCategory(category);
+        return jsonWriter.generateSuccessMessageReply("Successfully updated category");
+    }
+
+    private String processDeleteCategory(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException {
+
+        Integer categoryId = jsonReader.extractId(message);
+        categoryService.deleteCategory(categoryId);
+        return jsonWriter.generateSuccessMessageReply("Successfully deleted category");
+    }
+
+    private String processDeleteAllCategories()
+            throws InternalSQLException, ServerSideJSONException {
+
+        categoryService.deleteAllEntities();
+        return jsonWriter.generateSuccessMessageReply("Successfully deleted all categories");
+    }
+
 
     public static void main(String[] args) {
         ProcessorCorrectImpl processor = new ProcessorCorrectImpl();
+
+        Message deleteAllCategories = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_DELETE_ALL_CATEGORIES)
+                .message("")
+                .build();
+        Message deleteAllCategoriesResponse = processor.processMessage(deleteAllCategories);
+        System.out.println(deleteAllCategoriesResponse);
+
+        // id is set only for testing, it could be not defined when adding new entity
+        Message addCategory = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_ADD_CATEGORY)
+                .message("{\"id\": 50, \"name\": \"Name\", \"description\": \"Hey\"}")
+                .build();
+        Message addCategoryResponse = processor.processMessage(addCategory);
+        System.out.println(addCategoryResponse);
+
+        Message updateCategory = Message.builder()
+                .userID(12)
+                .commandType(COMMAND_UPDATE_CATEGORY)
+                .message("{\"id\": 50, \"name\": \"New Name\", \"description\": \"New Hey\"}")
+                .build();
+        Message updateCategoryResponse = processor.processMessage(updateCategory);
+        System.out.println(updateCategoryResponse);
 
         Message getAllCategories = Message.builder()
                 .userID(12)
@@ -146,7 +206,7 @@ public class ProcessorCorrectImpl implements Processor {
         Message getAllCategoriesByName = Message.builder()
                 .userID(12)
                 .commandType(COMMAND_GET_CATEGORIES_BY_NAME)
-                .message("{\"name\": \"egory 7\"}")
+                .message("{\"name\": \"Na\"}")
                 .build();
         Message getAllCategoriesByNameResponse = processor.processMessage(getAllCategoriesByName);
         System.out.println(getAllCategoriesByNameResponse);
@@ -154,18 +214,18 @@ public class ProcessorCorrectImpl implements Processor {
         Message getCategoryById = Message.builder()
                 .userID(12)
                 .commandType(COMMAND_GET_CATEGORY_BY_ID)
-                .message("{\"id\": 103}")
+                .message("{\"id\": 50}")
                 .build();
         Message getCategoryByIdResponse = processor.processMessage(getCategoryById);
         System.out.println(getCategoryByIdResponse);
 
-        Message addCategory = Message.builder()
+        Message deleteCategory = Message.builder()
                 .userID(12)
-                .commandType(COMMAND_ADD_CATEGORY)
-                .message("{\"name\": \"New New Name\", \"description\": \"Hey\"}")
+                .commandType(COMMAND_DELETE_CATEGORY)
+                .message("{\"id\": 50}")
                 .build();
-        Message addCategoryResponse = processor.processMessage(addCategory);
-        System.out.println(addCategoryResponse);
+        Message deleteCategoryResponse = processor.processMessage(deleteCategory);
+        System.out.println(deleteCategoryResponse);
 
     }
 }

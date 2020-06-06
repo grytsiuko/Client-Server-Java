@@ -54,12 +54,12 @@ public class JsonReader {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readValue(json, JsonNode.class);
-            System.out.println(json);
 
+            Integer id = getIntFieldIfExists(root, "id");
             String name = root.get("name").asText();
             String description = getStringFieldIfExists(root, "description");
 
-            return new Category(null, name, description);
+            return new Category(id, name, description);
         } catch (JsonProcessingException e) {
             throw new IllegalJSONException();
         } catch (NullPointerException e) {
@@ -72,5 +72,12 @@ public class JsonReader {
         if (jsonNode == null)
             return null;
         return jsonNode.asText();
+    }
+
+    private Integer getIntFieldIfExists(JsonNode parent, String field) {
+        JsonNode jsonNode = parent.get(field);
+        if (jsonNode == null)
+            return null;
+        return jsonNode.asInt();
     }
 }
