@@ -29,6 +29,12 @@ public class JsonWriter {
         }
     }
 
+    private void populateNodeWithCategory(ObjectNode node, Category category){
+        node.put("id", category.getId());
+        node.put("name", category.getName());
+        node.put("description", category.getDescription());
+    }
+
 
     public String generateOneEntityReply(Category category) throws ServerSideJSONException {
         try {
@@ -36,9 +42,7 @@ public class JsonWriter {
             ObjectMapper mapper = new ObjectMapper();
 
             ObjectNode rootNode = mapper.createObjectNode();
-            rootNode.put("id", category.getId());
-            rootNode.put("name", category.getName());
-            rootNode.put("description", category.getDescription());
+            populateNodeWithCategory(rootNode, category);
 
             mapper.writeValue(outputStream, rootNode);
             return outputStream.toString();
@@ -58,9 +62,7 @@ public class JsonWriter {
             ArrayNode array = rootNode.putArray("content");
             for (Category category : categories) {
                 ObjectNode element = array.addObject();
-                element.put("id", category.getId());
-                element.put("name", category.getName());
-                element.put("description", category.getDescription());
+                populateNodeWithCategory(element, category);
             }
 
             mapper.writeValue(outputStream, rootNode);
@@ -84,9 +86,7 @@ public class JsonWriter {
             ArrayNode array = rootNode.putArray("content");
             for (Category category : categories) {
                 ObjectNode element = array.addObject();
-                element.put("id", category.getId());
-                element.put("name", category.getName());
-                element.put("description", category.getDescription());
+                populateNodeWithCategory(element, category);
             }
 
             mapper.writeValue(outputStream, rootNode);
