@@ -3,6 +3,10 @@ package org.fidoshenyata.service;
 import com.sun.nio.sctp.IllegalReceiveException;
 import lombok.AllArgsConstructor;
 import org.fidoshenyata.db.DAO.IProductDao;
+import org.fidoshenyata.db.DAO.Impl.CategoryDao;
+import org.fidoshenyata.db.DAO.Impl.ProductDao;
+import org.fidoshenyata.db.connection.AbstractConnectionFactory;
+import org.fidoshenyata.db.connection.ProductionConnectionFactory;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.*;
@@ -12,7 +16,16 @@ import java.util.List;
 
 @AllArgsConstructor
 public class ProductService {
+
     private final IProductDao dao;
+
+    public ProductService(AbstractConnectionFactory connectionFactory){
+        dao = new ProductDao(connectionFactory);
+    }
+
+    public ProductService(){
+        dao = new ProductDao(new ProductionConnectionFactory());
+    }
 
     public Product getProduct(Integer id) throws InternalSQLException, NoEntityWithSuchIdException {
         if (id == null) throw new NullPointerException();

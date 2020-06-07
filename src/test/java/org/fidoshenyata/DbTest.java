@@ -2,6 +2,7 @@ package org.fidoshenyata;
 
 import org.fidoshenyata.db.DAO.Impl.CategoryDao;
 import org.fidoshenyata.db.DAO.Impl.ProductDao;
+import org.fidoshenyata.db.connection.TestingConnectionFactory;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
@@ -22,8 +23,8 @@ public class DbTest {
 
     @AfterClass
     public static void clearDB() throws Exception {
-        CategoryService categoryService = new CategoryService(new CategoryDao());
-        ProductService productService = new ProductService(new ProductDao());
+        CategoryService categoryService = new CategoryService(new TestingConnectionFactory());
+        ProductService productService = new ProductService(new TestingConnectionFactory());
 
         productService.deleteAllEntities();
         categoryService.deleteAllEntities();
@@ -31,8 +32,8 @@ public class DbTest {
 
     @BeforeClass
     public static void initDB() throws Exception {
-        CategoryService categoryService = new CategoryService(new CategoryDao());
-        ProductService productService = new ProductService(new ProductDao());
+        CategoryService categoryService = new CategoryService(new TestingConnectionFactory());
+        ProductService productService = new ProductService(new TestingConnectionFactory());
 
         productService.deleteAllEntities();
         categoryService.deleteAllEntities();
@@ -103,8 +104,8 @@ public class DbTest {
 
     @Before
     public void setUP() {
-        categoryService = new CategoryService(new CategoryDao());
-        productService = new ProductService(new ProductDao());
+        categoryService = new CategoryService(new TestingConnectionFactory());
+        productService = new ProductService(new TestingConnectionFactory());
     }
 
     @Test

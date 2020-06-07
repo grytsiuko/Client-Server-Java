@@ -1,17 +1,15 @@
 package org.fidoshenyata.processor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.fidoshenyata.db.DAO.Impl.CategoryDao;
-import org.fidoshenyata.db.DAO.Impl.ProductDao;
+import org.fidoshenyata.db.connection.AbstractConnectionFactory;
+import org.fidoshenyata.db.connection.TestingConnectionFactory;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.*;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
+import org.fidoshenyata.processor.json.JsonReader;
+import org.fidoshenyata.processor.json.JsonWriter;
 import org.fidoshenyata.service.CategoryService;
 import org.fidoshenyata.service.ProductService;
 
@@ -28,9 +26,17 @@ public class ProcessorCorrectImpl implements Processor {
     private JsonReader jsonReader;
     private JsonWriter jsonWriter;
 
+    public ProcessorCorrectImpl(AbstractConnectionFactory connectionFactory) {
+        categoryService = new CategoryService(connectionFactory);
+        productService = new ProductService(connectionFactory);
+        processorUtils = new ProcessorUtils();
+        jsonReader = new JsonReader();
+        jsonWriter = new JsonWriter();
+    }
+
     public ProcessorCorrectImpl() {
-        categoryService = new CategoryService(new CategoryDao());
-        productService = new ProductService(new ProductDao());
+        categoryService = new CategoryService(new TestingConnectionFactory());
+        productService = new ProductService(new TestingConnectionFactory());
         processorUtils = new ProcessorUtils();
         jsonReader = new JsonReader();
         jsonWriter = new JsonWriter();

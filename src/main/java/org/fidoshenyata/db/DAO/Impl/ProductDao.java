@@ -1,9 +1,10 @@
 package org.fidoshenyata.db.DAO.Impl;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.fidoshenyata.db.ConnectionFactory;
+import org.fidoshenyata.db.connection.AbstractConnectionFactory;
+import org.fidoshenyata.db.connection.ProductionConnectionFactory;
 import org.fidoshenyata.db.DAO.IProductDao;
-import org.fidoshenyata.db.constants.SqlStrings;
+import org.fidoshenyata.db.queries.SqlStrings;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.*;
@@ -15,9 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDao implements IProductDao {
+
+    private AbstractConnectionFactory connectionFactory;
+
+    public ProductDao(AbstractConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
     @Override
     public Product getEntity(Integer id) throws NoEntityWithSuchIdException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -40,7 +48,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public List<Product> getEntities(PagingInfo pagingInfo) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -64,7 +72,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public List<Product> getEntities(Integer categoryId, PagingInfo pagingInfo) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -89,7 +97,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public Integer getCount() throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -108,7 +116,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public Integer getCount(Integer categoryId) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -128,7 +136,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public List<Product> getEntitiesByName(String name) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -151,7 +159,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public List<Product> getEntitiesByName(Integer categoryId, String name) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -175,7 +183,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public BigDecimal getCost() throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -195,7 +203,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public BigDecimal getCost(Integer categoryId) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -217,7 +225,7 @@ public class ProductDao implements IProductDao {
     public boolean insertEntity(Product entity)
             throws NameAlreadyTakenException, InternalSQLException, CategoryNotExistsException {
 
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
             if (entity.getId() == null) {
@@ -258,7 +266,7 @@ public class ProductDao implements IProductDao {
     public boolean updateEntity(Product entity)
             throws NameAlreadyTakenException, InternalSQLException, CategoryNotExistsException {
 
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(SqlStrings.UPDATE_PRODUCT);
@@ -286,7 +294,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public boolean deleteEntity(Integer id) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
@@ -302,7 +310,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public boolean deleteAll() throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
@@ -318,7 +326,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public Boolean increaseAmount(Integer productId, Integer amount) throws NoSuchProductException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
         ResultSet rs = null;
@@ -354,7 +362,7 @@ public class ProductDao implements IProductDao {
 
     @Override
     public Boolean decreaseAmount(Integer productId, Integer amount) throws NoSuchProductException, NotEnoughProductException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
         ResultSet rs = null;

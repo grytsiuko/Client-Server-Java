@@ -1,4 +1,4 @@
-package org.fidoshenyata.db.constants;
+package org.fidoshenyata.db.queries;
 
 public class SqlStrings {
 

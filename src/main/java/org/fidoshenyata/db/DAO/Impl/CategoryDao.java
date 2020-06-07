@@ -1,12 +1,12 @@
 package org.fidoshenyata.db.DAO.Impl;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.fidoshenyata.db.ConnectionFactory;
+import org.fidoshenyata.db.connection.AbstractConnectionFactory;
+import org.fidoshenyata.db.connection.ProductionConnectionFactory;
 import org.fidoshenyata.db.DAO.Dao;
-import org.fidoshenyata.db.constants.SqlStrings;
+import org.fidoshenyata.db.queries.SqlStrings;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
-import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.InternalSQLException;
 import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
 import org.fidoshenyata.exceptions.db.NoEntityWithSuchIdException;
@@ -18,9 +18,15 @@ import java.util.List;
 
 public class CategoryDao implements Dao<Category> {
 
+    private AbstractConnectionFactory connectionFactory;
+
+    public CategoryDao(AbstractConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
     @Override
     public Category getEntity(Integer id) throws NoEntityWithSuchIdException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -43,7 +49,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public List<Category> getEntitiesByName(String name) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -66,7 +72,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public List<Category> getEntities(PagingInfo pagingInfo) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -90,7 +96,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public Integer getCount() throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -109,7 +115,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public boolean insertEntity(Category entity) throws NameAlreadyTakenException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
             if (entity.getId() == null) {
@@ -139,7 +145,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public boolean updateEntity(Category entity) throws NameAlreadyTakenException, InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(SqlStrings.UPDATE_CATEGORY);
@@ -163,7 +169,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public boolean deleteEntity(Integer id) throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
@@ -179,7 +185,7 @@ public class CategoryDao implements Dao<Category> {
 
     @Override
     public boolean deleteAll() throws InternalSQLException {
-        Connection connection = ConnectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();

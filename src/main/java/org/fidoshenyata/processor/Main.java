@@ -1,5 +1,6 @@
 package org.fidoshenyata.processor;
 
+import org.fidoshenyata.db.connection.TestingConnectionFactory;
 import org.fidoshenyata.packet.Message;
 
 import static org.fidoshenyata.packet.Message.*;
@@ -8,7 +9,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        ProcessorCorrectImpl processor = new ProcessorCorrectImpl();
+        ProcessorCorrectImpl processor = new ProcessorCorrectImpl(new TestingConnectionFactory());
 
         // delete old entities
 

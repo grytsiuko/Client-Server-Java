@@ -1,4 +1,4 @@
-package org.fidoshenyata.processor;
+package org.fidoshenyata.processor.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
