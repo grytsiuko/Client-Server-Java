@@ -20,10 +20,6 @@ public class CategoryService {
         dao = new CategoryDao(connectionFactory);
     }
 
-    public CategoryService(){
-        dao = new CategoryDao(new ProductionConnectionFactory());
-    }
-
     public Category getCategory(Integer id) throws InternalSQLException, NoEntityWithSuchIdException {
         if (id == null) throw new NullPointerException();
         return dao.getEntity(id);

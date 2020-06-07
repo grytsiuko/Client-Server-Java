@@ -4,7 +4,6 @@ import org.fidoshenyata.client.ClientCS;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.client.ClientTCP;
-import org.fidoshenyata.processor.ProcessorEnum;
 import org.fidoshenyata.server.ServerTCP;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,14 +21,14 @@ public class CsTcpTest {
 
     @BeforeClass
     public static void beforeClass() {
-        new Thread(new ServerTCP(ProcessorEnum.OK)).start();
+        new Thread(new ServerTCP()).start();
     }
 
     @Before
     public void setUp() throws InterruptedException {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
-                .commandType(Message.COMMAND_ADD_PRODUCT)
+                .commandType(Message.PING)
                 .message("Hello From Client!");
 
         requestMessage = messageBuilder.build();
@@ -50,7 +49,7 @@ public class CsTcpTest {
         for (int i = 0; i < packetsInThread; i++) {
             Packet response = clientTCP.request(requestMessage);
             String message = response.getUsefulMessage().getMessage();
-            assertEquals(message, "Ok");
+            assertEquals(message, "PONG");
             succeedPackets++;
         }
 
@@ -78,7 +77,7 @@ public class CsTcpTest {
                     for (int i = 0; i < packetsInThread; i++) {
                         Packet response = clientTCP.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
-                        assertEquals(message, "Ok");
+                        assertEquals(message, "PONG");
                         succeedPackets.incrementAndGet();
                     }
 
@@ -123,17 +122,17 @@ public class CsTcpTest {
 
         Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
 
         response = client.request(requestMessage2Magic);
         message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
 
         client.requestGivingHalfTEST(requestMessage2Magic);
         client.requestGivingLargeNumbersTEST();
 
         response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
     }
 }

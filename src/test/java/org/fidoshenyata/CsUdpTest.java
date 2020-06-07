@@ -4,14 +4,12 @@ import org.fidoshenyata.client.ClientCS;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.client.ClientUDP;
-import org.fidoshenyata.processor.ProcessorEnum;
 import org.fidoshenyata.server.ServerUDP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CsUdpTest {
@@ -21,14 +19,14 @@ public class CsUdpTest {
 
     @BeforeClass
     public static void beforeClass() {
-        new Thread(new ServerUDP(ProcessorEnum.OK)).start();
+        new Thread(new ServerUDP()).start();
     }
 
     @Before
     public void setUp() throws Exception {
         Message.MessageBuilder messageBuilder = Message.builder()
                 .userID(2048)
-                .commandType(Message.COMMAND_ADD_PRODUCT)
+                .commandType(Message.PING)
                 .message("Hello From Client!");
 
         requestMessage = messageBuilder.build();
@@ -43,7 +41,7 @@ public class CsUdpTest {
         client.connect();
         Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
     }
 
     @Test
@@ -53,7 +51,7 @@ public class CsUdpTest {
         for (int i = 0; i < 10; i++) {
             Packet response = client.request(requestMessage);
             String message = response.getUsefulMessage().getMessage();
-            Assert.assertEquals("Ok", message);
+            Assert.assertEquals("PONG", message);
         }
     }
 
@@ -76,7 +74,7 @@ public class CsUdpTest {
                     for (int i = 0; i < packetsInThread; i++) {
                         Packet response = client.request(requestMessage);
                         String message = response.getUsefulMessage().getMessage();
-                        Assert.assertEquals("Ok", message);
+                        Assert.assertEquals("PONG", message);
                         succeedPackets.incrementAndGet();
                     }
                 } catch (Exception e) {
@@ -119,16 +117,16 @@ public class CsUdpTest {
 
         Packet response = client.request(requestMessage);
         String message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
 
         response = client.request(requestMessage2Magic);
         message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
 
         client.requestGivingHalfTEST(requestMessage2Magic);
 
         response = client.request(requestMessage);
         message = response.getUsefulMessage().getMessage();
-        Assert.assertEquals("Ok", message);
+        Assert.assertEquals("PONG", message);
     }
 }

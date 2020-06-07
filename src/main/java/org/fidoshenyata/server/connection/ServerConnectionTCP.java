@@ -1,7 +1,6 @@
 package org.fidoshenyata.server.connection;
 
 import org.fidoshenyata.packet.Packet;
-import org.fidoshenyata.processor.ProcessorEnum;
 import org.fidoshenyata.network.NetworkTCP;
 import org.fidoshenyata.exceptions.communication.SocketClosedException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
@@ -16,12 +15,10 @@ public class ServerConnectionTCP implements Runnable {
 
     private final Socket socket;
     private final ExecutorService poolProcessors;
-    private final ProcessorEnum processorType;
 
-    public ServerConnectionTCP(Socket socket, ExecutorService poolProcessors, ProcessorEnum processorType) {
+    public ServerConnectionTCP(Socket socket, ExecutorService poolProcessors) {
         this.socket = socket;
         this.poolProcessors = poolProcessors;
-        this.processorType = processorType;
     }
 
     @Override
@@ -48,7 +45,7 @@ public class ServerConnectionTCP implements Runnable {
             try {
                 Packet packet = networkTCP.receiveMessage();
                 System.out.println("Server received: " + packet.getUsefulMessage());
-                poolProcessors.execute(new ExecutableProcessorTCP(networkTCP, packet, processorType));
+                poolProcessors.execute(new ExecutableProcessorTCP(networkTCP, packet));
 
             } catch (SocketClosedException e) {
                 System.out.println("Socket was closed by client, unable to receive packet");

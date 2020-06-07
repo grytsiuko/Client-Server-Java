@@ -17,6 +17,8 @@ public class Message {
     public final static Integer MAX_MESSAGE_LENGTH = 512;
 
 
+    public static final int PING = 0;
+
     public static final int RESPONSE_OK = 1;
     public static final int RESPONSE_ERROR = 2;
 

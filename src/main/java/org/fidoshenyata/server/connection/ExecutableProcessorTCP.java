@@ -4,8 +4,7 @@ import org.fidoshenyata.exceptions.cryption.EncryptionException;
 import org.fidoshenyata.exceptions.cryption.TooLongMessageException;
 import org.fidoshenyata.network.NetworkTCP;
 import org.fidoshenyata.packet.Packet;
-import org.fidoshenyata.processor.ProcessorEnum;
-import org.fidoshenyata.processor.ProcessorFactory;
+import org.fidoshenyata.processor.Processor;
 
 import java.io.IOException;
 
@@ -13,18 +12,16 @@ class ExecutableProcessorTCP implements Runnable {
 
     private final NetworkTCP networkTCP;
     private final Packet packet;
-    private final ProcessorEnum processorType;
 
-    ExecutableProcessorTCP(NetworkTCP networkTCP, Packet packet, ProcessorEnum processorType){
+    ExecutableProcessorTCP(NetworkTCP networkTCP, Packet packet){
         this.networkTCP = networkTCP;
         this.packet = packet;
-        this.processorType = processorType;
     }
 
     @Override
     public void run() {
         try {
-            Packet answer = ProcessorFactory.processor(processorType).process(packet);
+            Packet answer = new Processor().process(packet);
             networkTCP.sendMessage(answer);
             System.out.println("Server sent response");
         } catch (EncryptionException e) {

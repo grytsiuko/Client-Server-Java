@@ -9,7 +9,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        ProcessorCorrectImpl processor = new ProcessorCorrectImpl(new TestingConnectionFactory());
+        Processor processor = new Processor(new TestingConnectionFactory());
 
         // delete old entities
 

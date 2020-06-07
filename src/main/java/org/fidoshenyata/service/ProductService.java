@@ -23,10 +23,6 @@ public class ProductService {
         dao = new ProductDao(connectionFactory);
     }
 
-    public ProductService(){
-        dao = new ProductDao(new ProductionConnectionFactory());
-    }
-
     public Product getProduct(Integer id) throws InternalSQLException, NoEntityWithSuchIdException {
         if (id == null) throw new NullPointerException();
         return dao.getEntity(id);

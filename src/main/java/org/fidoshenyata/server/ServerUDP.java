@@ -1,17 +1,14 @@
 package org.fidoshenyata.server;
 
-import org.fidoshenyata.processor.ProcessorEnum;
 import org.fidoshenyata.exceptions.packet.CorruptedPacketException;
 import org.fidoshenyata.exceptions.cryption.DecryptionException;
 import org.fidoshenyata.exceptions.cryption.KeyInitializationException;
 import org.fidoshenyata.network.NetworkUDP;
 import org.fidoshenyata.network.utils.PacketDestinationInfo;
-import org.fidoshenyata.processor.ProcessorFactory;
 import org.fidoshenyata.server.connection.ServerConnectionUDP;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,15 +16,11 @@ public class ServerUDP implements ServerCS{
     public static final int THREADS = 5;
     public static final int PORT = 4445;
 
-    private ProcessorEnum processorType;
-
-    public ServerUDP(ProcessorEnum processorType){
-        this.processorType = processorType;
+    public ServerUDP(){
     }
 
     public static void main(String[] args){
-        ProcessorEnum processorEnum = args.length == 1 ? ProcessorFactory.processorType(args[0]): ProcessorEnum.OK;
-        new Thread(new ServerTCP(processorEnum)).start();
+        new Thread(new ServerTCP()).start();
     }
 
     @Override
@@ -41,7 +34,7 @@ public class ServerUDP implements ServerCS{
             while (running) {
                 try {
                     PacketDestinationInfo packetDI = network.receiveMessage();
-                    poolProcessor.execute(new ServerConnectionUDP(packetDI, network, processorType));
+                    poolProcessor.execute(new ServerConnectionUDP(packetDI, network));
                 } catch (DecryptionException e) {
                     System.out.println("Decryption error");
                 } catch (CorruptedPacketException e) {
