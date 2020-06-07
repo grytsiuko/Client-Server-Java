@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import org.fidoshenyata.db.DAO.Dao;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
-import org.fidoshenyata.exceptions.db.IllegalFieldException;
-import org.fidoshenyata.exceptions.db.InternalSQLException;
-import org.fidoshenyata.exceptions.db.NameAlreadyTakenException;
-import org.fidoshenyata.exceptions.db.NoEntityWithSuchIdException;
+import org.fidoshenyata.exceptions.db.*;
 
 import java.util.List;
 
@@ -35,7 +32,7 @@ public class CategoryService {
     }
 
     public boolean addCategory(Category category)
-            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException {
+            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException, CategoryNotExistsException {
         if (category == null) throw new NullPointerException();
         assertCategory(category);
 
@@ -43,7 +40,7 @@ public class CategoryService {
     }
 
     public boolean updateCategory(Category category)
-            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException {
+            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException, CategoryNotExistsException {
         if (category == null) throw new NullPointerException();
         assertCategory(category);
 

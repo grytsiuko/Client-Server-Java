@@ -214,7 +214,9 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
-    public boolean insertEntity(Product entity) throws NameAlreadyTakenException, InternalSQLException {
+    public boolean insertEntity(Product entity)
+            throws NameAlreadyTakenException, InternalSQLException, CategoryNotExistsException {
+
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -241,8 +243,9 @@ public class ProductDao implements IProductDao {
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
-            else
-                throw new InternalSQLException();
+            if (ex.getSQLState().equals("23503"))
+                throw new CategoryNotExistsException();
+            throw new InternalSQLException();
         } catch (SQLException ex) {
             throw new InternalSQLException();
         } finally {
@@ -252,7 +255,9 @@ public class ProductDao implements IProductDao {
     }
 
     @Override
-    public boolean updateEntity(Product entity) throws NameAlreadyTakenException, InternalSQLException {
+    public boolean updateEntity(Product entity)
+            throws NameAlreadyTakenException, InternalSQLException, CategoryNotExistsException {
+
         Connection connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
         try {
@@ -268,8 +273,9 @@ public class ProductDao implements IProductDao {
         } catch (PSQLException ex) {
             if (ex.getSQLState().equals("23505"))
                 throw new NameAlreadyTakenException();
-            else
-                throw new InternalSQLException();
+            if (ex.getSQLState().equals("23503"))
+                throw new CategoryNotExistsException();
+            throw new InternalSQLException();
         } catch (SQLException ex) {
             throw new InternalSQLException();
         } finally {

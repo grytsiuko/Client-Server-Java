@@ -58,10 +58,10 @@ public class ProductService {
     }
 
     public boolean addProduct(Product product)
-            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException {
+            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException, CategoryNotExistsException {
 
         if (product == null) throw new NullPointerException();
-        if (product.getAmount() < 0)
+        if (product.getAmount() == null || product.getAmount() < 0)
             throw new IllegalFieldException("Negative starting amount");
         assertProduct(product);
 
@@ -69,7 +69,7 @@ public class ProductService {
     }
 
     public boolean updateProduct(Product product)
-            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException {
+            throws NameAlreadyTakenException, InternalSQLException, IllegalFieldException, CategoryNotExistsException {
         if (product == null) throw new NullPointerException();
         assertProduct(product);
 

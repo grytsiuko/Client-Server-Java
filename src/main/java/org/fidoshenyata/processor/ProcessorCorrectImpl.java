@@ -8,12 +8,14 @@ import org.fidoshenyata.db.DAO.Impl.CategoryDao;
 import org.fidoshenyata.db.DAO.Impl.ProductDao;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
+import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.*;
 import org.fidoshenyata.packet.Message;
 import org.fidoshenyata.packet.Packet;
 import org.fidoshenyata.service.CategoryService;
 import org.fidoshenyata.service.ProductService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.fidoshenyata.packet.Message.*;
@@ -84,6 +86,59 @@ public class ProcessorCorrectImpl implements Processor {
                 case COMMAND_DELETE_ALL_CATEGORIES:
                     response = processDeleteAllCategories();
                     break;
+
+
+                case COMMAND_GET_PRODUCTS:
+                    response = processGetProducts(message);
+                    break;
+
+                case COMMAND_GET_PRODUCTS_BY_CATEGORY:
+                    response = processGetProductsByCategory(message);
+                    break;
+
+                case COMMAND_GET_PRODUCTS_BY_NAME:
+                    response = processGetProductsByName(message);
+                    break;
+
+                case COMMAND_GET_PRODUCTS_BY_NAME_BY_CATEGORY:
+                    response = processGetProductsByNameByCategory(message);
+                    break;
+
+                case COMMAND_GET_PRODUCT_BY_ID:
+                    response = processGetProductById(message);
+                    break;
+
+                case COMMAND_GET_PRODUCTS_COST:
+                    response = processGetProductsCost();
+                    break;
+
+                case COMMAND_GET_PRODUCTS_COST_BY_CATEGORY:
+                    response = processGetProductsCostByCategory(message);
+                    break;
+
+                case COMMAND_ADD_PRODUCT:
+                    response = processAddProduct(message);
+                    break;
+
+                case COMMAND_UPDATE_PRODUCT:
+                    response = processUpdateProduct(message);
+                    break;
+
+                case COMMAND_INCREASE_PRODUCT:
+                    response = processIncreaseProduct(message);
+                    break;
+
+                case COMMAND_DECREASE_PRODUCT:
+                    response = processDecreaseProduct(message);
+                    break;
+
+                case COMMAND_DELETE_PRODUCT:
+                    response = processDeleteProduct(message);
+                    break;
+
+                case COMMAND_DELETE_ALL_PRODUCTS:
+                    response = processDeleteAllProducts();
+                    break;
             }
 
         } catch (IllegalJSONException e) {
@@ -97,9 +152,15 @@ public class ProcessorCorrectImpl implements Processor {
         } catch (AbsentFieldsJSONException | NullPointerException e) {
             return processorUtils.buildErrorMessage("Some fields are absent", userID);
         } catch (NameAlreadyTakenException e) {
-            return processorUtils.buildErrorMessage("Such name already exists", userID);
+            return processorUtils.buildErrorMessage("Such name or id already exists", userID);
         } catch (IllegalFieldException e) {
             return processorUtils.buildErrorMessage("Illegal value of some fields", userID);
+        } catch (NoSuchProductException e) {
+            return processorUtils.buildErrorMessage("No such product", userID);
+        } catch (NotEnoughProductException e) {
+            return processorUtils.buildErrorMessage("Not enough amount", userID);
+        } catch (CategoryNotExistsException e) {
+            return processorUtils.buildErrorMessage("Category not exists", userID);
         }
 
         if (response == null) {
@@ -136,7 +197,7 @@ public class ProcessorCorrectImpl implements Processor {
     }
 
     private String processAddCategory(String message)
-            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException {
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException, CategoryNotExistsException {
 
         Category category = jsonReader.extractCategory(message);
         categoryService.addCategory(category);
@@ -144,7 +205,7 @@ public class ProcessorCorrectImpl implements Processor {
     }
 
     private String processUpdateCategory(String message)
-            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException {
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException, CategoryNotExistsException {
 
         Category category = jsonReader.extractCategory(message);
         categoryService.updateCategory(category);
@@ -164,5 +225,113 @@ public class ProcessorCorrectImpl implements Processor {
 
         categoryService.deleteAllEntities();
         return jsonWriter.generateSuccessMessageReply("Successfully deleted all categories");
+    }
+
+    private String processGetProducts(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        PagingInfo pagingInfo = jsonReader.extractPagingInfo(message);
+        List<Product> products = productService.getProducts(pagingInfo);
+        pagingInfo.setTotal(productService.getCount());
+        return jsonWriter.generatePagingReply(products, pagingInfo);
+    }
+
+    private String processGetProductsByCategory(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        PagingInfo pagingInfo = jsonReader.extractPagingInfo(message);
+        Integer categoryId = jsonReader.extractCategoryId(message);
+        List<Product> products = productService.getProducts(categoryId, pagingInfo);
+        pagingInfo.setTotal(productService.getCount(categoryId));
+        return jsonWriter.generatePagingReply(products, pagingInfo);
+    }
+
+    private String processGetProductsByName(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        String name = jsonReader.extractName(message);
+        List<Product> products = productService.getProductsByName(name);
+        return jsonWriter.generateListReply(products);
+    }
+
+    private String processGetProductsByNameByCategory(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        String name = jsonReader.extractName(message);
+        Integer categoryId = jsonReader.extractCategoryId(message);
+        List<Product> products = productService.getProductsByName(categoryId, name);
+        return jsonWriter.generateListReply(products);
+    }
+
+    private String processGetProductById(String message)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException, NoEntityWithSuchIdException {
+
+        Integer id = jsonReader.extractId(message);
+        Product product = productService.getProduct(id);
+        return jsonWriter.generateOneEntityReply(product);
+    }
+
+    private String processGetProductsCost()
+            throws InternalSQLException, ServerSideJSONException {
+
+        BigDecimal cost = productService.getCost();
+        return jsonWriter.generateCostReply(cost);
+    }
+
+    private String processGetProductsCostByCategory(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        Integer categoryId = jsonReader.extractCategoryId(message);
+        BigDecimal cost = productService.getCost(categoryId);
+        return jsonWriter.generateCostReply(cost);
+    }
+
+    private String processAddProduct(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException, CategoryNotExistsException {
+
+        Product product = jsonReader.extractProduct(message);
+        productService.addProduct(product);
+        return jsonWriter.generateSuccessMessageReply("Successfully added product");
+    }
+
+    private String processUpdateProduct(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException, AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException, CategoryNotExistsException {
+
+        Product product = jsonReader.extractProduct(message);
+        productService.updateProduct(product);
+        return jsonWriter.generateSuccessMessageReply("Successfully updated product");
+    }
+
+    private String processIncreaseProduct(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException, IllegalFieldException, NoSuchProductException {
+
+        Integer amount = jsonReader.extractAmount(message);
+        Integer id = jsonReader.extractId(message);
+        productService.increaseAmount(id, amount);
+        return jsonWriter.generateSuccessMessageReply("Successfully increased product");
+    }
+
+    private String processDecreaseProduct(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException, IllegalFieldException, NoSuchProductException, NotEnoughProductException {
+
+        Integer amount = jsonReader.extractAmount(message);
+        Integer id = jsonReader.extractId(message);
+        productService.decreaseAmount(id, amount);
+        return jsonWriter.generateSuccessMessageReply("Successfully decreased product");
+    }
+
+    private String processDeleteProduct(String message)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException {
+
+        Integer id = jsonReader.extractId(message);
+        productService.deleteEntity(id);
+        return jsonWriter.generateSuccessMessageReply("Successfully deleted product");
+    }
+
+    private String processDeleteAllProducts()
+            throws InternalSQLException, ServerSideJSONException {
+
+        productService.deleteAllEntities();
+        return jsonWriter.generateSuccessMessageReply("Successfully deleted all products");
     }
 }

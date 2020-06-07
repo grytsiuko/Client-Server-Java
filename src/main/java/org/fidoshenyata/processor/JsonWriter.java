@@ -3,12 +3,13 @@ package org.fidoshenyata.processor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.fidoshenyata.db.model.Category;
+import org.fidoshenyata.db.model.EntityDB;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.exceptions.db.ServerSideJSONException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class JsonWriter {
@@ -29,20 +30,14 @@ public class JsonWriter {
         }
     }
 
-    private void populateNodeWithCategory(ObjectNode node, Category category){
-        node.put("id", category.getId());
-        node.put("name", category.getName());
-        node.put("description", category.getDescription());
-    }
 
-
-    public String generateOneEntityReply(Category category) throws ServerSideJSONException {
+    public String generateOneEntityReply(EntityDB entityDB) throws ServerSideJSONException {
         try {
             OutputStream outputStream = new ByteArrayOutputStream();
             ObjectMapper mapper = new ObjectMapper();
 
             ObjectNode rootNode = mapper.createObjectNode();
-            populateNodeWithCategory(rootNode, category);
+            entityDB.populateJsonNode(rootNode);
 
             mapper.writeValue(outputStream, rootNode);
             return outputStream.toString();
@@ -52,7 +47,23 @@ public class JsonWriter {
     }
 
 
-    public String generateListReply(List<Category> categories) throws ServerSideJSONException {
+    public String generateCostReply(BigDecimal cost) throws ServerSideJSONException {
+        try {
+            OutputStream outputStream = new ByteArrayOutputStream();
+            ObjectMapper mapper = new ObjectMapper();
+
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("cost", cost.toString());
+
+            mapper.writeValue(outputStream, rootNode);
+            return outputStream.toString();
+        } catch (Exception e) {
+            throw new ServerSideJSONException();
+        }
+    }
+
+
+    public String generateListReply(List<? extends EntityDB> entitiesDB) throws ServerSideJSONException {
         try {
             OutputStream outputStream = new ByteArrayOutputStream();
             ObjectMapper mapper = new ObjectMapper();
@@ -60,9 +71,9 @@ public class JsonWriter {
             ObjectNode rootNode = mapper.createObjectNode();
 
             ArrayNode array = rootNode.putArray("content");
-            for (Category category : categories) {
+            for (EntityDB entityDB : entitiesDB) {
                 ObjectNode element = array.addObject();
-                populateNodeWithCategory(element, category);
+                entityDB.populateJsonNode(element);
             }
 
             mapper.writeValue(outputStream, rootNode);
@@ -73,7 +84,9 @@ public class JsonWriter {
     }
 
 
-    public String generatePagingReply(List<Category> categories, PagingInfo pagingInfo) throws ServerSideJSONException {
+    public String generatePagingReply(List<? extends EntityDB> entitiesDB, PagingInfo pagingInfo)
+            throws ServerSideJSONException {
+
         try {
             OutputStream outputStream = new ByteArrayOutputStream();
             ObjectMapper mapper = new ObjectMapper();
@@ -84,9 +97,9 @@ public class JsonWriter {
             rootNode.put("total", pagingInfo.getTotal());
 
             ArrayNode array = rootNode.putArray("content");
-            for (Category category : categories) {
+            for (EntityDB entityDB : entitiesDB) {
                 ObjectNode element = array.addObject();
-                populateNodeWithCategory(element, category);
+                entityDB.populateJsonNode(element);
             }
 
             mapper.writeValue(outputStream, rootNode);
