@@ -63,7 +63,7 @@ public class Main {
                 .userID(12)
                 .commandType(COMMAND_UPDATE_PRODUCT)
                 .message("{\"id\": 50, \"name\": \"New Product\", \"producer\": \"New Producer\", " +
-                        "\"description\": \"Description\", \"price\": \"30.00\", \"categoryId\": 5}")
+                        "\"description\": \"Description\", \"price\": \"30.00\", \"categoryId\": 50}")
                 .build();
         Message updateProductResponse = processor.processMessage(updateProduct);
         System.out.println(updateProductResponse);
