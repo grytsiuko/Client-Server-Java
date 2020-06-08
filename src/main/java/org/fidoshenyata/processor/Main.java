@@ -1,6 +1,7 @@
 package org.fidoshenyata.processor;
 
 import org.fidoshenyata.db.connection.TestingConnectionFactory;
+import org.fidoshenyata.db.utils.EmbeddedDb;
 import org.fidoshenyata.packet.Message;
 
 import static org.fidoshenyata.packet.Message.*;
@@ -192,5 +193,6 @@ public class Main {
         Message deleteProductResponse = processor.processMessage(deleteProduct);
         System.out.println(deleteProductResponse);
 
+        EmbeddedDb.stop();
     }
 }
