@@ -1,7 +1,5 @@
 package org.fidoshenyata;
 
-import org.fidoshenyata.db.DAO.Impl.CategoryDao;
-import org.fidoshenyata.db.DAO.Impl.ProductDao;
 import org.fidoshenyata.db.connection.TestingConnectionFactory;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;

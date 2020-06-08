@@ -1,8 +1,6 @@
 package org.fidoshenyata.processor;
 
 import org.fidoshenyata.db.connection.ProductionConnectionFactory;
-import org.fidoshenyata.db.connection.TestingConnectionFactory;
-import org.fidoshenyata.db.utils.EmbeddedDb;
 import org.fidoshenyata.packet.Message;
 
 import static org.fidoshenyata.packet.Message.*;
