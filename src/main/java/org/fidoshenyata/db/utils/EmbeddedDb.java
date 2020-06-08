@@ -37,7 +37,9 @@ public class EmbeddedDb {
                         RuntimeConfigBuilder runtimeConfigBuilder = new RuntimeConfigBuilder();
                         IRuntimeConfig defaultConfigs = runtimeConfigBuilder.defaultsWithLogger(Command.Postgres, logger).build();
 
+                        System.out.println("Staring Embedded PostgreSQL");
                         url = postgres.start(defaultConfigs);
+                        System.out.println("Embedded PostgreSQL started");
 
                         try {
                             final Connection connection = DriverManager.getConnection(url);
