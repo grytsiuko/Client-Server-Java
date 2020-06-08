@@ -1,5 +1,6 @@
 package org.fidoshenyata.processor;
 
+import org.fidoshenyata.db.connection.ProductionConnectionFactory;
 import org.fidoshenyata.db.connection.TestingConnectionFactory;
 import org.fidoshenyata.db.utils.EmbeddedDb;
 import org.fidoshenyata.packet.Message;
@@ -10,7 +11,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        Processor processor = new Processor(new TestingConnectionFactory());
+        Processor processor = new Processor(new ProductionConnectionFactory());
 
         // delete old entities
 
@@ -192,7 +193,5 @@ public class Main {
                 .build();
         Message deleteProductResponse = processor.processMessage(deleteProduct);
         System.out.println(deleteProductResponse);
-
-        EmbeddedDb.stop();
     }
 }
