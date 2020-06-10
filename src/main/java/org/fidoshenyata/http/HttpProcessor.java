@@ -96,10 +96,10 @@ public class HttpProcessor {
     }
 
     private void handleProductGetPath() throws NumberFormatException, InternalSQLException, NoEntityWithSuchIdException
-            , ServerSideJSONException {
+            , ServerSideJSONException, NoSuchPathException {
         if(hp.getUrlPartsLength() == 3){
             this.processGetProductById();
-        } else{
+        }else if (hp.getUrlPartsLength() == 2){
             if(hp.getParam("name")== null){
                 int offset = Integer.parseInt(hp.getParam("offset"));
                 int limit = Integer.parseInt(hp.getParam("limit"));
@@ -116,7 +116,7 @@ public class HttpProcessor {
                 this.processGetProductsByNameByCategory(hp.getParam("name"),
                         categoryId);
             }
-        }
+        } else throw new NoSuchPathException();
     }
 
     private void processGetProductsByNameByCategory(String name, int categoryId) throws InternalSQLException, ServerSideJSONException {
