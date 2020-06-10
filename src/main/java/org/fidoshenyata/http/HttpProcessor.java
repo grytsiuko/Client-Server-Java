@@ -285,11 +285,12 @@ public class HttpProcessor {
     }
 
     private void processAddCategory(String body) throws IllegalJSONException, AbsentFieldsJSONException,
-            ServerSideJSONException, NameAlreadyTakenException, IllegalFieldException,
+            NameAlreadyTakenException, IllegalFieldException,
             InternalSQLException, CategoryNotExistsException {
         Category category = jsonReader.extractCategory(body);
         categoryService.addCategory(category);
-        responseSender.sendJsonResponse(201,jsonWriter.generateSuccessMessageReply("Successfully added category"));
+        category = categoryService.getCategoriesByName(category.getName()).get(0);
+        responseSender.sendJsonResponse(201,jsonWriter.generateCreatedIdReply(category.getId()));
     }
 
     private void processAddProduct(String body) throws IllegalJSONException, AbsentFieldsJSONException,
@@ -297,7 +298,8 @@ public class HttpProcessor {
             CategoryNotExistsException, ServerSideJSONException {
         Product product = jsonReader.extractProduct(body);
         productService.addProduct(product);
-        responseSender.sendJsonResponse(201,jsonWriter.generateSuccessMessageReply("Successfully added product"));
+        product = productService.getProductsByName(product.getName()).get(0);
+        responseSender.sendJsonResponse(201,jsonWriter.generateCreatedIdReply(product.getId()));
     }
 
     private void processGetCategories(PagingInfo pagingInfo)

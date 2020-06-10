@@ -132,4 +132,16 @@ public class JsonWriter {
             return null;
         }
     }
+
+    public String generateCreatedIdReply(int id){
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("id", id);
+            return mapper.writeValueAsString(rootNode);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
