@@ -11,7 +11,9 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 public class HttpServer {
-    private static final int NTHREADS = 100;
+    private final static int NTHREADS = 100;
+
+    private final static int PORT = 8891;
     private static final Executor exec
             = Executors.newFixedThreadPool(NTHREADS);
 
@@ -25,32 +27,21 @@ public class HttpServer {
                 InputStream input = connection.getInputStream();
                 OutputStream output = connection.getOutputStream();
         ) {
-
             HttpParser hp = new HttpParser(input);
-            System.out.println(hp.getRequestURL());
-            System.out.println(hp.getHeader("x-auth"));
-            System.out.println(hp.getParams());
-            System.out.println(hp.getMethod());
-
             ResponseSender responseSender = new ResponseSender(output);
             HttpProcessor httpProcessor = new HttpProcessor(new ProductionConnectionFactory(),hp, responseSender);
             httpProcessor.process();
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void await() {
-        int port = 8891;
-
         // Loop waiting for a request
         try (
-                ServerSocket socket = new ServerSocket(port);
+                ServerSocket socket = new ServerSocket(PORT);
         ) {
-            System.out.println("Server is waiting for request at port: " + port);
+            System.out.println("Server is waiting for request at port: " + PORT);
             while (true) {
                 Socket connection = socket.accept();
                 Runnable task = () -> handleRequest(connection);

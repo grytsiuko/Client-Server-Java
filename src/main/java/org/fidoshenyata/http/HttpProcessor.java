@@ -49,11 +49,13 @@ public class HttpProcessor {
                     this.handleGetRequests();
                     break;
                 case "POST":
+                    this.handlePostRequests();
                     break;
                 case "PUT":
                     this.handlePutRequests();
                     break;
                 case "DELETE":
+                    this.handleDeleteRequests();
                     break;
                 default:
                     throw new NoSuchPathException();
@@ -78,7 +80,7 @@ public class HttpProcessor {
             responseSender.sendJsonResponse(401, jsonWriter.generateErrorReply("Token expired"));
         }catch (NameAlreadyTakenException e) {
             responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Such name or id already exists"));
-        }catch (AbsentFieldsJSONException e) {
+        }catch (AbsentFieldsJSONException | NullPointerException e) {
             responseSender.sendJsonResponse(404, jsonWriter.generateErrorReply("Some fields are absent"));
         }catch (CategoryNotExistsException e) {
             responseSender.sendJsonResponse(404, jsonWriter.generateErrorReply("Category not exists"));
@@ -86,6 +88,10 @@ public class HttpProcessor {
             responseSender.sendJsonResponse(400, jsonWriter.generateErrorReply("Illegal JSON"));
         }catch (IllegalFieldException e) {
             responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Illegal value of some fields"));
+        }catch (NoSuchProductException e) {
+            responseSender.sendJsonResponse(404, jsonWriter.generateErrorReply("No such product"));
+        } catch (NotEnoughProductException e) {
+            responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Not enough amount"));
         }
 
     }
@@ -123,6 +129,28 @@ public class HttpProcessor {
         else throw new NoSuchPathException();
     }
 
+    private void handlePostRequests() throws NotAuthException, NoSuchPathException, NameAlreadyTakenException,
+            AbsentFieldsJSONException, CategoryNotExistsException, IllegalFieldException,
+            InternalSQLException, IllegalJSONException, ServerSideJSONException,
+            NoSuchProductException, NotEnoughProductException {
+        checkJws();
+        if(hp.urlContains("api")){
+            if(hp.urlContains("good")) this.handleProductPostPath();
+            else if(hp.urlContains("category")) this.processUpdateCategory(hp.getBody());
+            else throw new NoSuchPathException();
+        }else throw new NoSuchPathException();
+    }
+
+    private void handleDeleteRequests() throws NotAuthException, NoSuchPathException,
+            InternalSQLException, ServerSideJSONException {
+        checkJws();
+        if(hp.urlContains("api")){
+            if(hp.urlContains("good")) this.handleProductDeletePath();
+            else if(hp.urlContains("category")) this.handleCategoryDeletePath();
+            else throw new NoSuchPathException();
+        }else throw new NoSuchPathException();
+    }
+
     private void handleCostPath() throws NumberFormatException, InternalSQLException,
             ServerSideJSONException, NoSuchPathException {
         if(hp.getUrlPartsLength() == 3){
@@ -157,6 +185,7 @@ public class HttpProcessor {
             }
         } else throw new NoSuchPathException();
     }
+
     private void handleCategoryGetPath() throws NumberFormatException, ServerSideJSONException,
             InternalSQLException, NoEntityWithSuchIdException, NoSuchPathException {
         if(hp.getUrlPartsLength() == 3){
@@ -172,6 +201,87 @@ public class HttpProcessor {
             PagingInfo pagingInfo = new PagingInfo(offset,limit);
             this.processGetCategories(pagingInfo);
         }  else throw new NoSuchPathException();
+    }
+
+    private void handleProductPostPath() throws NameAlreadyTakenException, AbsentFieldsJSONException,
+            CategoryNotExistsException, IllegalFieldException, InternalSQLException, IllegalJSONException,
+            ServerSideJSONException, NoSuchPathException, NumberFormatException, NoSuchProductException,
+            NotEnoughProductException {
+        if(hp.getUrlPartsLength() == 2){
+            this.processUpdateProduct(hp.getBody());
+        }else if (hp.getUrlPartsLength() == 3){
+            String command = hp.getUrlParts().get(2).toLowerCase();
+            if(command.equals("dec")) this.processDecreaseProduct(hp.getBody());
+            else if(command.equals("inc")) this.processIncreaseProduct(hp.getBody());
+            else throw new NoSuchPathException();
+        } else throw new NoSuchPathException();
+    }
+
+    private void handleProductDeletePath() throws NumberFormatException,
+            InternalSQLException, ServerSideJSONException, NoSuchPathException {
+
+        if(hp.getUrlPartsLength() == 3){
+            int id = Integer.parseInt(hp.getUrlParts().get(2));
+            productService.deleteEntity(id);
+            responseSender.sendJsonResponse(200,
+                    jsonWriter.generateSuccessMessageReply("Successfully deleted product"));
+        }else if(hp.getUrlPartsLength() == 2){
+            productService.deleteAllEntities();
+            responseSender.sendJsonResponse(200,
+                    jsonWriter.generateSuccessMessageReply("Successfully deleted all products"));
+        } else throw new NoSuchPathException();
+    }
+    private void handleCategoryDeletePath() throws InternalSQLException, ServerSideJSONException, NoSuchPathException {
+        if(hp.getUrlPartsLength() == 3){
+            int id = Integer.parseInt(hp.getUrlParts().get(2));
+            categoryService.deleteCategory(id);
+            responseSender.sendJsonResponse(200,
+                    jsonWriter.generateSuccessMessageReply("Successfully deleted category"));
+        }else if(hp.getUrlPartsLength() == 2){
+            categoryService.deleteAllEntities();
+            responseSender.sendJsonResponse(200,
+                    jsonWriter.generateSuccessMessageReply("Successfully deleted all categories"));
+        } else throw new NoSuchPathException();
+    }
+
+    private void processUpdateCategory(String body)
+            throws IllegalJSONException, InternalSQLException, ServerSideJSONException,
+            AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException,
+            CategoryNotExistsException {
+
+        Category category = jsonReader.extractCategory(body);
+        categoryService.updateCategory(category);
+        responseSender.sendJsonResponse(200,
+                jsonWriter.generateSuccessMessageReply("Successfully updated category"));
+    }
+
+    private void processIncreaseProduct(String body)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException,
+            IllegalFieldException, NoSuchProductException {
+
+        Integer amount = jsonReader.extractAmount(body);
+        Integer id = jsonReader.extractId(body);
+        productService.increaseAmount(id, amount);
+        responseSender.sendJsonResponse(200,
+                jsonWriter.generateSuccessMessageReply("Successfully increased amount of product"));
+    }
+
+    private void processDecreaseProduct(String body)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException,
+            IllegalFieldException, NoSuchProductException, NotEnoughProductException {
+        Integer amount = jsonReader.extractAmount(body);
+        Integer id = jsonReader.extractId(body);
+        productService.decreaseAmount(id, amount);
+        responseSender.sendJsonResponse(200,
+                jsonWriter.generateSuccessMessageReply("Successfully decreased amount of product"));
+    }
+
+    private void processUpdateProduct(String body)
+            throws InternalSQLException, ServerSideJSONException, IllegalJSONException,
+            AbsentFieldsJSONException, NameAlreadyTakenException, IllegalFieldException, CategoryNotExistsException {
+        Product product = jsonReader.extractProduct(body);
+        productService.updateProduct(product);
+        responseSender.sendJsonResponse(200,jsonWriter.generateSuccessMessageReply("Successfully updated product"));
     }
 
     private void processAddCategory(String body) throws IllegalJSONException, AbsentFieldsJSONException,
