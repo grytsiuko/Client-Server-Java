@@ -9,6 +9,8 @@ import java.net.URLDecoder;
 public class HttpParser {
     private BufferedReader reader;
     private String method, url, body;
+
+    private List<String> urlParts;
     private Hashtable<String, String> headers, params;
     private int[] ver;
 
@@ -17,9 +19,15 @@ public class HttpParser {
         headers = new Hashtable<String, String>();
         params = new Hashtable<String, String>();
         ver = new int[2];
+        urlParts = new ArrayList<>();
+        try {
+            this.parseRequest();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public int parseRequest() throws IOException {
+    private  int parseRequest() throws IOException {
         String initial;
         String[] cmd;
         String[] temp;
@@ -97,6 +105,14 @@ public class HttpParser {
                 }
             }
         }
+        parseUrlParts();
+    }
+
+    private void parseUrlParts(){
+        String[] parts = url.split("/");
+        for(int i = 1; i < parts.length; ++i){
+            urlParts.add(parts[i]);
+        }
     }
 
     private void parseHeaders() throws IOException {
@@ -140,9 +156,21 @@ public class HttpParser {
         return method;
     }
 
+    public List<String> getUrlParts(){
+        return urlParts;
+    }
+
+    public int getUrlPartsLength(){
+        return urlParts.size();
+    }
+
+    public boolean urlContains(String item){
+        return urlParts.contains(item);
+    }
+
     public String getHeader(String key) {
         if (headers != null)
-            return (String) headers.get(key.toLowerCase());
+            return headers.get(key.toLowerCase());
         else return null;
     }
 
@@ -155,7 +183,7 @@ public class HttpParser {
     }
 
     public String getParam(String key) {
-        return (String) params.get(key);
+        return params.get(key);
     }
 
     public Hashtable<String, String> getParams() {

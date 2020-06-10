@@ -1,5 +1,6 @@
 package org.fidoshenyata.processor.json;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -106,6 +107,29 @@ public class JsonWriter {
             return outputStream.toString();
         } catch (Exception e) {
             throw new ServerSideJSONException();
+        }
+    }
+
+    public String generateTokenReply(String jws) throws ServerSideJSONException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("token", jws);
+            return mapper.writeValueAsString(rootNode);
+        } catch (JsonProcessingException e) {
+            throw new ServerSideJSONException();
+        }
+    }
+
+    public String generateErrorReply(String error){
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("error", error);
+            return mapper.writeValueAsString(rootNode);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

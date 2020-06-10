@@ -1,6 +1,7 @@
 package org.fidoshenyata.http;
 
-import java.io.PrintWriter;
+import org.fidoshenyata.db.connection.ProductionConnectionFactory;
+
 import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -26,25 +27,15 @@ public class HttpServer {
         ) {
 
             HttpParser hp = new HttpParser(input);
-
-            hp.parseRequest();
             System.out.println(hp.getRequestURL());
-            System.out.println(hp.getBody());
-            System.out.println(hp.getHeaders());
+            System.out.println(hp.getHeader("x-auth"));
             System.out.println(hp.getParams());
             System.out.println(hp.getMethod());
 
+            ResponseSender responseSender = new ResponseSender(output);
+            HttpProcessor httpProcessor = new HttpProcessor(new ProductionConnectionFactory(),hp, responseSender);
+            httpProcessor.process();
 
-            PrintWriter out = new PrintWriter(output);
-
-            // Start sending our reply, using the HTTP 1.1 protocol
-            out.print("HTTP/1.1 200 \r\n"); // Version & status code
-            out.print("Content-Type: application/json\r\n"); // The type of data
-            out.print("Connection: close\r\n"); // Will close stream
-            out.print("\r\n"); // End of headers
-//            out.print("{\"content\":{\"response\":\"ok\"}}");
-            out.println(hp.getBody());
-            out.close();
 
         } catch (IOException e) {
             e.printStackTrace();
