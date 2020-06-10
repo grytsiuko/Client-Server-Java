@@ -5,9 +5,7 @@ import org.fidoshenyata.db.connection.AbstractConnectionFactory;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
-import org.fidoshenyata.exceptions.db.InternalSQLException;
-import org.fidoshenyata.exceptions.db.NoEntityWithSuchIdException;
-import org.fidoshenyata.exceptions.db.ServerSideJSONException;
+import org.fidoshenyata.exceptions.db.*;
 import org.fidoshenyata.exceptions.http.NoSuchPathException;
 import org.fidoshenyata.exceptions.http.NotAuthException;
 import org.fidoshenyata.processor.json.JsonReader;
@@ -53,9 +51,12 @@ public class HttpProcessor {
                 case "POST":
                     break;
                 case "PUT":
+                    this.handlePutRequests();
                     break;
                 case "DELETE":
                     break;
+                default:
+                    throw new NoSuchPathException();
             }
         }
         catch(ServerSideJSONException e){
@@ -75,6 +76,16 @@ public class HttpProcessor {
                     (401, jsonWriter.generateErrorReply("Not authorized or incompatible token"));
         } catch (ExpiredJwtException e){
             responseSender.sendJsonResponse(401, jsonWriter.generateErrorReply("Token expired"));
+        }catch (NameAlreadyTakenException e) {
+            responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Such name or id already exists"));
+        }catch (AbsentFieldsJSONException e) {
+            responseSender.sendJsonResponse(404, jsonWriter.generateErrorReply("Some fields are absent"));
+        }catch (CategoryNotExistsException e) {
+            responseSender.sendJsonResponse(404, jsonWriter.generateErrorReply("Category not exists"));
+        }catch (IllegalJSONException e) {
+            responseSender.sendJsonResponse(400, jsonWriter.generateErrorReply("Illegal JSON"));
+        }catch (IllegalFieldException e) {
+            responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Illegal value of some fields"));
         }
 
     }
@@ -95,6 +106,18 @@ public class HttpProcessor {
             if(hp.urlContains("good")) this.handleProductGetPath();
             else if (hp.urlContains("cost")) this.handleCostPath();
             else if (hp.urlContains("category")) this.handleCategoryGetPath();
+            else throw new NoSuchPathException();
+        }
+        else throw new NoSuchPathException();
+    }
+
+    private void handlePutRequests() throws NotAuthException, NoSuchPathException, NameAlreadyTakenException,
+            AbsentFieldsJSONException, CategoryNotExistsException, IllegalFieldException,
+            InternalSQLException, IllegalJSONException, ServerSideJSONException {
+        checkJws();
+        if(hp.urlContains("api")){
+            if(hp.urlContains("good")) this.processAddProduct(hp.getBody());
+            else if (hp.urlContains("category")) this.processAddCategory(hp.getBody());
             else throw new NoSuchPathException();
         }
         else throw new NoSuchPathException();
@@ -149,6 +172,22 @@ public class HttpProcessor {
             PagingInfo pagingInfo = new PagingInfo(offset,limit);
             this.processGetCategories(pagingInfo);
         }  else throw new NoSuchPathException();
+    }
+
+    private void processAddCategory(String body) throws IllegalJSONException, AbsentFieldsJSONException,
+            ServerSideJSONException, NameAlreadyTakenException, IllegalFieldException,
+            InternalSQLException, CategoryNotExistsException {
+        Category category = jsonReader.extractCategory(body);
+        categoryService.addCategory(category);
+        responseSender.sendJsonResponse(201,jsonWriter.generateSuccessMessageReply("Successfully added category"));
+    }
+
+    private void processAddProduct(String body) throws IllegalJSONException, AbsentFieldsJSONException,
+            NameAlreadyTakenException, IllegalFieldException, InternalSQLException,
+            CategoryNotExistsException, ServerSideJSONException {
+        Product product = jsonReader.extractProduct(body);
+        productService.addProduct(product);
+        responseSender.sendJsonResponse(201,jsonWriter.generateSuccessMessageReply("Successfully added product"));
     }
 
     private void processGetCategories(PagingInfo pagingInfo)
