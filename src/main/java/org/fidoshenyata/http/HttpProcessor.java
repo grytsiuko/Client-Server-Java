@@ -2,6 +2,7 @@ package org.fidoshenyata.http;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import org.fidoshenyata.db.connection.AbstractConnectionFactory;
+import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.InternalSQLException;
@@ -14,6 +15,7 @@ import org.fidoshenyata.processor.json.JsonWriter;
 import org.fidoshenyata.service.CategoryService;
 import org.fidoshenyata.service.ProductService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class HttpProcessor {
@@ -91,6 +93,20 @@ public class HttpProcessor {
         checkJws();
         if(hp.urlContains("api")){
             if(hp.urlContains("good")) this.handleProductGetPath();
+            else if (hp.urlContains("cost")) this.handleCostPath();
+            else if (hp.urlContains("category")) this.handleCategoryGetPath();
+            else throw new NoSuchPathException();
+        }
+        else throw new NoSuchPathException();
+    }
+
+    private void handleCostPath() throws NumberFormatException, InternalSQLException,
+            ServerSideJSONException, NoSuchPathException {
+        if(hp.getUrlPartsLength() == 3){
+            int categoryId = Integer.parseInt(hp.getUrlParts().get(2));
+            this.processGetProductsCostByCategory(categoryId);
+        }else if(hp.getUrlPartsLength() == 2){
+            this.processGetProductsCost();
         }
         else throw new NoSuchPathException();
     }
@@ -117,6 +133,50 @@ public class HttpProcessor {
                         categoryId);
             }
         } else throw new NoSuchPathException();
+    }
+    private void handleCategoryGetPath() throws NumberFormatException, ServerSideJSONException,
+            InternalSQLException, NoEntityWithSuchIdException, NoSuchPathException {
+        if(hp.getUrlPartsLength() == 3){
+            int id = Integer.parseInt(hp.getUrlParts().get(2));
+            this.processGetCategoryById(id);
+        }else if(hp.getUrlPartsLength() == 2){
+            if (hp.getParam("name") != null) {
+                this.processGetCategoriesByName(hp.getParam("name"));
+                return;
+            }
+            int offset = Integer.parseInt(hp.getParam("offset"));
+            int limit = Integer.parseInt(hp.getParam("limit"));
+            PagingInfo pagingInfo = new PagingInfo(offset,limit);
+            this.processGetCategories(pagingInfo);
+        }  else throw new NoSuchPathException();
+    }
+
+    private void processGetCategories(PagingInfo pagingInfo)
+            throws InternalSQLException, ServerSideJSONException {
+        List<Category> categories = categoryService.getCategories(pagingInfo);
+        pagingInfo.setTotal(categoryService.getCount());
+        responseSender.sendJsonResponse(200, jsonWriter.generatePagingReply(categories, pagingInfo));
+    }
+
+    private void processGetCategoriesByName(String name) throws InternalSQLException, ServerSideJSONException {
+        List<Category> categories = categoryService.getCategoriesByName(name);
+        responseSender.sendJsonResponse(200, jsonWriter.generateListReply(categories));
+    }
+
+    private void processGetCategoryById(int id) throws ServerSideJSONException, InternalSQLException,
+            NoEntityWithSuchIdException {
+        Category category = categoryService.getCategory(id);
+        responseSender.sendJsonResponse(200, jsonWriter.generateOneEntityReply(category));
+    }
+
+    private void processGetProductsCost() throws InternalSQLException, ServerSideJSONException {
+        BigDecimal cost = productService.getCost();
+        responseSender.sendJsonResponse(200, jsonWriter.generateCostReply(cost));
+    }
+
+    private void processGetProductsCostByCategory(int categoryId) throws InternalSQLException, ServerSideJSONException {
+        BigDecimal cost = productService.getCost(categoryId);
+        responseSender.sendJsonResponse(200, jsonWriter.generateCostReply(cost));
     }
 
     private void processGetProductsByNameByCategory(String name, int categoryId) throws InternalSQLException, ServerSideJSONException {
