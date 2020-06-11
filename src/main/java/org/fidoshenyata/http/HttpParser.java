@@ -55,20 +55,16 @@ public class HttpParser {
         } else ret = 400;
 
 
-        if(cmd[0].equals("GET") || cmd[0].equals("DELETE") ||
-                cmd[0].equals("POST") || cmd[0].equals("PUT")){
-            method = cmd[0];
-            parseQueryParams(cmd[1]);
-            parseHeaders();
-            if (headers.isEmpty()) ret = 400;
-        }
+        method = cmd[0];
+        parseQueryParams(cmd[1]);
+        parseHeaders();
+        if (headers.isEmpty()) ret = 400;
 
         if (cmd[0].equals("POST") || cmd[0].equals("PUT")) {
             parseBody();
         }
         else if (ver[0] == 1 && ver[1] >= 1) {
-            if (cmd[0].equals("OPTIONS") ||
-                    cmd[0].equals("TRACE") ||
+            if (cmd[0].equals("TRACE") ||
                     cmd[0].equals("CONNECT")) {
                 ret = 501; // not implemented
             }

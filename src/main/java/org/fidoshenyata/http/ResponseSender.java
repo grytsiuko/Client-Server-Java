@@ -25,4 +25,11 @@ public class ResponseSender {
     public void sendJsonResponse(int code, String body) {
         this.sendResponse(code, APP_JSON, body);
     }
+
+    public void sendOptionsResponse(){
+        pw.print("HTTP/1.1 204 No Content\r\n");
+        pw.print("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE\r\n");
+        pw.print("Access-Control-Allow-Headers: content-type, x-auth\r\n");
+        pw.print("Connection: Keep-Alive\r\n");
+    }
 }

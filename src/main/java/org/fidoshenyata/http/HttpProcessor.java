@@ -57,6 +57,8 @@ public class HttpProcessor {
                 case "DELETE":
                     this.handleDeleteRequests();
                     break;
+                case "OPTIONS":
+                    this.handleOptionsRequests();
                 default:
                     throw new NoSuchPathException();
             }
@@ -94,6 +96,10 @@ public class HttpProcessor {
             responseSender.sendJsonResponse(409, jsonWriter.generateErrorReply("Not enough amount"));
         }
 
+    }
+
+    private void handleOptionsRequests() {
+        responseSender.sendOptionsResponse();
     }
 
     private void checkJws() throws NotAuthException, ExpiredJwtException {
