@@ -16,6 +16,7 @@ public class ResponseSender {
         // Start sending our reply, using the HTTP 1.1 protocol
         pw.print("HTTP/1.1 "+code+" \r\n"); // Version & status code
         pw.print("Content-Type: "+contentType+"\r\n"); // The type of data
+        pw.print("Access-Control-Allow-Origin: *\r\n");
         pw.print("Connection: close\r\n"); // Will close stream
         pw.print("\r\n"); // End of headers
         pw.println(body);
