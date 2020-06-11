@@ -103,15 +103,15 @@ public class HttpProcessor {
     private void handleGetRequests()
             throws ServerSideJSONException, IllegalArgumentException, NoSuchPathException,
             InternalSQLException, NoEntityWithSuchIdException, NotAuthException {
-        if(hp.urlContains("login")) {
+        if(hp.urlContains("login", 0)) {
             this.handleLoginPath();
             return;
         }
         checkJws();
-        if(hp.urlContains("api")){
-            if(hp.urlContains("good")) this.handleProductGetPath();
-            else if (hp.urlContains("cost")) this.handleCostPath();
-            else if (hp.urlContains("category")) this.handleCategoryGetPath();
+        if(hp.urlContains("api", 0)){
+            if(hp.urlContains("good", 1)) this.handleProductGetPath();
+            else if (hp.urlContains("cost",1)) this.handleCostPath();
+            else if (hp.urlContains("category",1)) this.handleCategoryGetPath();
             else throw new NoSuchPathException();
         }
         else throw new NoSuchPathException();
@@ -121,9 +121,9 @@ public class HttpProcessor {
             AbsentFieldsJSONException, CategoryNotExistsException, IllegalFieldException,
             InternalSQLException, IllegalJSONException, ServerSideJSONException {
         checkJws();
-        if(hp.urlContains("api")){
-            if(hp.urlContains("good")) this.processAddProduct(hp.getBody());
-            else if (hp.urlContains("category")) this.processAddCategory(hp.getBody());
+        if(hp.urlContains("api", 0)){
+            if(hp.urlContains("good", 1)) this.processAddProduct(hp.getBody());
+            else if (hp.urlContains("category", 1)) this.processAddCategory(hp.getBody());
             else throw new NoSuchPathException();
         }
         else throw new NoSuchPathException();
@@ -134,9 +134,9 @@ public class HttpProcessor {
             InternalSQLException, IllegalJSONException, ServerSideJSONException,
             NoSuchProductException, NotEnoughProductException {
         checkJws();
-        if(hp.urlContains("api")){
-            if(hp.urlContains("good")) this.handleProductPostPath();
-            else if(hp.urlContains("category")) this.processUpdateCategory(hp.getBody());
+        if(hp.urlContains("api", 0)){
+            if(hp.urlContains("good", 1)) this.handleProductPostPath();
+            else if(hp.urlContains("category", 1)) this.processUpdateCategory(hp.getBody());
             else throw new NoSuchPathException();
         }else throw new NoSuchPathException();
     }
@@ -144,9 +144,9 @@ public class HttpProcessor {
     private void handleDeleteRequests() throws NotAuthException, NoSuchPathException,
             InternalSQLException, ServerSideJSONException {
         checkJws();
-        if(hp.urlContains("api")){
-            if(hp.urlContains("good")) this.handleProductDeletePath();
-            else if(hp.urlContains("category")) this.handleCategoryDeletePath();
+        if(hp.urlContains("api", 0)){
+            if(hp.urlContains("good",1)) this.handleProductDeletePath();
+            else if(hp.urlContains("category", 1)) this.handleCategoryDeletePath();
             else throw new NoSuchPathException();
         }else throw new NoSuchPathException();
     }

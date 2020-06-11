@@ -164,8 +164,8 @@ public class HttpParser {
         return urlParts.size();
     }
 
-    public boolean urlContains(String item){
-        return urlParts.contains(item);
+    public boolean urlContains(String item,int index){
+        return urlParts.get(index).equals(item);
     }
 
     public String getHeader(String key) {
