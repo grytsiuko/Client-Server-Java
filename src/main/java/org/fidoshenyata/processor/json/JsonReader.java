@@ -118,14 +118,14 @@ public class JsonReader {
 
     private String getStringFieldIfExists(JsonNode parent, String field) {
         JsonNode jsonNode = parent.get(field);
-        if (jsonNode == null)
+        if (jsonNode == null || jsonNode.isNull())
             return null;
         return jsonNode.asText();
     }
 
     private Integer getIntFieldIfExists(JsonNode parent, String field) {
         JsonNode jsonNode = parent.get(field);
-        if (jsonNode == null)
+        if (jsonNode == null || jsonNode.isNull())
             return null;
         return jsonNode.asInt();
     }
