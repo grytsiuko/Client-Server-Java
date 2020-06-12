@@ -5,6 +5,9 @@ public class SqlStrings {
     public final static String GET_ENTITY_BY_ID =
             "SELECT * FROM $table WHERE id =";
 
+    public final static String GET_ENTITIES_NAMED_ID =
+            "SELECT id,name FROM category";
+
     public final static String GET_ENTITY_BY_NAME =
             "SELECT * FROM $table WHERE name LIKE ? ORDER BY id DESC";
 

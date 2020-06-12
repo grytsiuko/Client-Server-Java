@@ -1,9 +1,9 @@
 package org.fidoshenyata.db.DAO.Impl;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.fidoshenyata.db.DAO.ICategoryDao;
 import org.fidoshenyata.db.connection.AbstractConnectionFactory;
-import org.fidoshenyata.db.connection.ProductionConnectionFactory;
-import org.fidoshenyata.db.DAO.Dao;
+import org.fidoshenyata.db.model.NamedId;
 import org.fidoshenyata.db.queries.SqlStrings;
 import org.fidoshenyata.db.model.Category;
 import org.fidoshenyata.db.model.PagingInfo;
@@ -16,7 +16,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CategoryDao implements Dao<Category> {
+public class CategoryDao implements ICategoryDao {
 
     private AbstractConnectionFactory connectionFactory;
 
@@ -38,6 +38,29 @@ public class CategoryDao implements Dao<Category> {
             } else {
                 throw new NoEntityWithSuchIdException();
             }
+        } catch (SQLException ex) {
+            throw new InternalSQLException();
+        } finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(stmt);
+            DbUtils.closeQuietly(connection);
+        }
+    }
+
+    @Override
+    public List<NamedId> getEntities() throws InternalSQLException {
+        Connection connection = connectionFactory.getConnection();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt
+                    .executeQuery(fillScript(SqlStrings.GET_ENTITIES_NAMED_ID));
+            List<NamedId> list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(extractNamedIdFromResultSet(rs));
+            }
+            return list;
         } catch (SQLException ex) {
             throw new InternalSQLException();
         } finally {
@@ -204,6 +227,12 @@ public class CategoryDao implements Dao<Category> {
         String name = rs.getString("name");
         String description = rs.getString("description");
         return new Category(id, name, description);
+    }
+
+    private NamedId extractNamedIdFromResultSet(ResultSet rs) throws SQLException {
+        Integer id = rs.getInt("id");
+        String name = rs.getString("name");
+        return new NamedId(id, name);
     }
 
     private static String fillScript(String script) {

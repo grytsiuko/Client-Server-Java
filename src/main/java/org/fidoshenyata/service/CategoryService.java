@@ -2,10 +2,12 @@ package org.fidoshenyata.service;
 
 import lombok.AllArgsConstructor;
 import org.fidoshenyata.db.DAO.Dao;
+import org.fidoshenyata.db.DAO.ICategoryDao;
 import org.fidoshenyata.db.DAO.Impl.CategoryDao;
 import org.fidoshenyata.db.connection.AbstractConnectionFactory;
 import org.fidoshenyata.db.connection.ProductionConnectionFactory;
 import org.fidoshenyata.db.model.Category;
+import org.fidoshenyata.db.model.NamedId;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.exceptions.db.*;
 
@@ -14,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryService {
 
-    private final Dao<Category> dao;
+    private final ICategoryDao dao;
 
     public CategoryService(AbstractConnectionFactory connectionFactory){
         dao = new CategoryDao(connectionFactory);
@@ -28,6 +30,10 @@ public class CategoryService {
     public List<Category> getCategoriesByName(String name) throws InternalSQLException {
         if (name == null) throw new NullPointerException();
         return dao.getEntitiesByName(name);
+    }
+
+    public List<NamedId> getCategoriesNamedId() throws InternalSQLException {
+        return dao.getEntities();
     }
 
     public List<Category> getCategories(PagingInfo pagingInfo) throws InternalSQLException {

@@ -3,6 +3,7 @@ package org.fidoshenyata.http;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.fidoshenyata.db.connection.AbstractConnectionFactory;
 import org.fidoshenyata.db.model.Category;
+import org.fidoshenyata.db.model.NamedId;
 import org.fidoshenyata.db.model.PagingInfo;
 import org.fidoshenyata.db.model.Product;
 import org.fidoshenyata.exceptions.db.*;
@@ -118,6 +119,7 @@ public class HttpProcessor {
             if(hp.urlContains("good", 1)) this.handleProductGetPath();
             else if (hp.urlContains("cost",1)) this.handleCostPath();
             else if (hp.urlContains("category",1)) this.handleCategoryGetPath();
+            else if (hp.urlContains("categories",1)) this.handleCategoriesGetPath();
             else throw new NoSuchPathException();
         }
         else throw new NoSuchPathException();
@@ -207,6 +209,12 @@ public class HttpProcessor {
             PagingInfo pagingInfo = new PagingInfo(offset,limit);
             this.processGetCategories(pagingInfo);
         }  else throw new NoSuchPathException();
+    }
+
+    private void handleCategoriesGetPath() throws InternalSQLException, ServerSideJSONException {
+        List<NamedId> list = categoryService.getCategoriesNamedId();
+        responseSender.sendJsonResponse(200,
+                jsonWriter.generateListReply(list));
     }
 
     private void handleProductPostPath() throws NameAlreadyTakenException, AbsentFieldsJSONException,
